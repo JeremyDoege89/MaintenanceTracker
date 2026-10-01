@@ -62,6 +62,7 @@ class VehicleRepository(
         vehicles.observeSummaries(includeArchived)
 
     fun observeVehicleCount(): Flow<Int> = vehicles.observeCount()
+    suspend fun activeVehicleCount(): Int = vehicles.activeCount()
     fun observeVehicle(id: String): Flow<Vehicle?> = vehicles.observe(id)
     fun observeTasks(vehicleId: String): Flow<List<MaintenanceTask>> = tasks.observeForVehicle(vehicleId)
     fun observeRecentRecords(vehicleId: String, limit: Int = 3): Flow<List<ServiceRecord>> =

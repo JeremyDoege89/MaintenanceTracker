@@ -41,6 +41,12 @@ import dev.maintracker.ui.common.AppActions
 import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.ServiceSheetRequest
 import dev.maintracker.ui.common.app
+import dev.maintracker.billing.ProEvent
+import dev.maintracker.domain.Entitlements
+import dev.maintracker.domain.ProFeature
+import dev.maintracker.domain.ProState
+import dev.maintracker.ui.pro.Paywall
+import dev.maintracker.ui.pro.PaywallRequest
 import dev.maintracker.ui.garage.GarageScreen
 import dev.maintracker.ui.history.RecordDetailScreen
 import dev.maintracker.ui.home.HomeScreen
@@ -54,6 +60,7 @@ import dev.maintracker.ui.task.TaskEditScreen
 import dev.maintracker.ui.vehicle.VehicleDetailScreen
 import dev.maintracker.ui.vehicle.VehicleEditScreen
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -109,6 +116,8 @@ fun AppNav(openTask: MutableStateFlow<String?>) {
     val snackbar = remember { SnackbarHostState() }
     val uiScope = rememberCoroutineScope()
     var sheet by remember { mutableStateOf<ServiceSheetRequest?>(null) }
+    var paywall by remember { mutableStateOf<PaywallRequest?>(null) }
+    var paywallMessage by remember { mutableStateOf<String?>(null) }
     val actions = remember {
         AppActions(
             openServiceSheet = { sheet = it },
@@ -130,7 +139,51 @@ fun AppNav(openTask: MutableStateFlow<String?>) {
                     }
                 }
             },
+            openPaywall = { paywallMessage = null; paywall = it },
+            requireVehicleSlot = { then ->
+                uiScope.launch {
+                    val app = context.app()
+                    val pro = app.pro.status.first { it.loaded } // never gate on a not-yet-read cache
+                    if (Entitlements.canAddVehicle(pro.state, app.repository.activeVehicleCount())) {
+                        then()
+                    } else {
+                        paywallMessage = null
+                        paywall = PaywallRequest(ProFeature.SECOND_VEHICLE, onUnlocked = then)
+                    }
+                }
+            },
         )
+    }
+
+    // Purchase outcomes: inside the paywall while it's open (a snackbar would sit behind the sheet),
+    // otherwise as a snackbar, e.g. a pending payment that clears hours later.
+    LaunchedEffect(Unit) {
+        context.app().pro.events.collect { e ->
+            val open = paywall
+            when (e) {
+                ProEvent.Unlocked -> {
+                    paywall = null
+                    actions.showMessage("Pro unlocked. Thank you!", null)
+                    open?.onUnlocked?.invoke()
+                }
+                ProEvent.Pending -> if (open == null) {
+                    actions.showMessage("Payment pending. Pro unlocks when Google Play confirms it.", null)
+                }
+                is ProEvent.Failed -> if (open != null) paywallMessage = e.message else actions.showMessage(e.message, null)
+                is ProEvent.Restored -> {
+                    val text = when (e.state) {
+                        ProState.PRO -> "Pro is already unlocked on this phone."
+                        ProState.PENDING -> "Your payment is still pending with Google Play."
+                        ProState.FREE -> "No Pro purchase found for this Google account."
+                    }
+                    if (open != null) paywallMessage = text else actions.showMessage(text, null)
+                }
+                ProEvent.RestoreOffline -> {
+                    val text = "Can't reach Google Play right now. Try again when you're online."
+                    if (open != null) paywallMessage = text else actions.showMessage(text, null)
+                }
+            }
+        }
     }
 
     CompositionLocalProvider(LocalAppActions provides actions) {
@@ -149,6 +202,7 @@ fun AppNav(openTask: MutableStateFlow<String?>) {
             }
         }
         sheet?.let { req -> ServiceSheet(req, onDismiss = { sheet = null }) }
+        paywall?.let { req -> Paywall(req, paywallMessage, onDismiss = { paywall = null }) }
         ReminderPermissionPrompts()
     }
 }
@@ -157,14 +211,16 @@ private fun androidx.navigation.NavGraphBuilder.graph(nav: NavHostController) {
     val back: () -> Unit = { nav.popBackStack() }
 
     composable(Routes.HOME) {
+        val actions = LocalAppActions.current
         HomeScreen(
-            onAddVehicle = { nav.navigate(Routes.VEHICLE_NEW) },
+            onAddVehicle = { actions.requireVehicleSlot { nav.navigate(Routes.VEHICLE_NEW) } },
             onOpenTask = { nav.navigate(Routes.task(it)) },
         )
     }
     composable(Routes.GARAGE) {
+        val actions = LocalAppActions.current
         GarageScreen(
-            onAddVehicle = { nav.navigate(Routes.VEHICLE_NEW) },
+            onAddVehicle = { actions.requireVehicleSlot { nav.navigate(Routes.VEHICLE_NEW) } },
             onOpenVehicle = { nav.navigate(Routes.vehicle(it)) },
             onEditVehicle = { nav.navigate(Routes.vehicleEdit(it)) },
         )

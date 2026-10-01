@@ -5,5 +5,9 @@
         <receiver
             android:name=".DebugReminderReceiver"
             android:exported="true" />
+        <!-- Debug builds only: drives the fake Play backend for the M4 billing acceptance test. -->
+        <receiver
+            android:name=".DebugBillingReceiver"
+            android:exported="true" />
     </application>
 </manifest>

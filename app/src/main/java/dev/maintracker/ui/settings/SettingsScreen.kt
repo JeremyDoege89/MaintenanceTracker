@@ -48,7 +48,13 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.maintracker.BuildConfig
+import dev.maintracker.MaintTrackerApp
+import dev.maintracker.billing.FakeBillingGateway
 import dev.maintracker.data.AppSettings
+import dev.maintracker.domain.ProState
+import dev.maintracker.ui.common.LocalAppActions
+import dev.maintracker.ui.pro.PaywallRequest
 import dev.maintracker.domain.ReminderPrefs
 import dev.maintracker.ui.common.app
 import kotlinx.coroutines.launch
@@ -92,6 +98,8 @@ fun SettingsScreen() {
     val notifOn = remember(resumeTick) { notificationsAllowed(context) }
     val exactOn = remember(resumeTick) { app.alarms.canScheduleExact() }
     val next by produceState<Long?>(null, resumeTick, settings) { value = app.reminders.nextFireAt() }
+    val pro by app.pro.status.collectAsStateWithLifecycle()
+    val actions = LocalAppActions.current
     val version = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "?"
 
     val askNotif = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -152,6 +160,20 @@ fun SettingsScreen() {
                 next?.let { DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(it)) }
                     ?: "Nothing scheduled",
             )
+
+            Section("Pro")
+            Row(
+                "Maintenance Tracker Pro",
+                when (pro.state) {
+                    ProState.FREE -> "Free: one vehicle, everything else included. Tap to see what Pro adds."
+                    ProState.PENDING -> "Payment pending. Pro unlocks when Google Play confirms it."
+                    ProState.PRO -> "Unlocked. Thank you!"
+                },
+            ) { actions.openPaywall(PaywallRequest(feature = null)) }
+            Row("Restore purchases", "Checks Google Play for Pro bought on this Google account") {
+                scope.launch { app.pro.restore() }
+            }
+            if (BuildConfig.DEBUG) DebugBillingRows(app)
 
             Section("Units")
             Row("Miles / km, currency, date format", "Arrives in M5")
@@ -256,4 +278,33 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
         trailingContent = { Switch(checked = checked, onCheckedChange = null) },
         modifier = Modifier.heightIn(min = 56.dp).clickable { onChange(!checked) },
     )
+}
+
+/** Debug builds only: drive the fake Play backend from the phone (adb: DebugBillingReceiver). */
+@Composable
+private fun DebugBillingRows(app: MaintTrackerApp) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val fake = app.billing as? FakeBillingGateway
+    var tick by remember { mutableIntStateOf(0) }
+    Section("Debug · billing")
+    SwitchRow(
+        "Use fake billing",
+        if (fake != null) "On: no money moves. Turn off + restart to talk to real Google Play." else "Off: real Google Play. Turn on + restart.",
+        FakeBillingGateway.enabled(context).also { tick },
+    ) { FakeBillingGateway.setEnabled(context, it); tick++ }
+    if (fake == null) return
+    val state = remember(tick) { fake.describe() }
+    Row("Fake Play state", state)
+    Row("Next purchase result", "${fake.nextOutcome.name.lowercase()} · tap to cycle") {
+        val all = FakeBillingGateway.Outcome.entries
+        fake.nextOutcome = all[(fake.nextOutcome.ordinal + 1) % all.size]
+        tick++
+    }
+    SwitchRow("Play unreachable", "Queries fail; cached entitlement must hold", fake.offline.also { tick }) {
+        fake.offline = it
+        tick++
+    }
+    Row("Complete pending payment", "As if the cash payment cleared") { scope.launch { fake.completePending(); tick++ } }
+    Row("Refund in Play Console", "App notices on its next Play check (restart or Restore)") { fake.refund(); tick++ }
 }

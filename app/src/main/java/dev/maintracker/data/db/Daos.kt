@@ -70,6 +70,9 @@ interface VehicleDao {
     @Query("SELECT COUNT(*) FROM vehicle")
     fun observeCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM vehicle WHERE archived = 0")
+    suspend fun activeCount(): Int
+
     @Insert
     suspend fun insert(vehicle: Vehicle)
 

@@ -13,8 +13,8 @@ android {
         applicationId = "dev.maintracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3.0-m3"
+        versionCode = 4
+        versionName = "0.4.0-m4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -31,8 +31,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // android.util.Log in shared code (ProManager) is a no-op on the JVM instead of throwing.
+    testOptions.unitTests.isReturnDefaultValues = true
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // Exported Room schemas double as MigrationTestHelper inputs.
@@ -70,6 +73,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime)
+    implementation(libs.billing)
     implementation(libs.coroutines.android)
     implementation(platform(libs.serialization.bom))
 

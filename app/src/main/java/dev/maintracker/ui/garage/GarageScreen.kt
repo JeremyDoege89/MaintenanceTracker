@@ -50,6 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.maintracker.data.VehicleRepository
 import dev.maintracker.data.db.VehicleSummary
 import dev.maintracker.data.model.TaskStatus
+import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.PrimaryButton
 import dev.maintracker.ui.common.StatusPill
 import dev.maintracker.ui.common.VehicleImage
@@ -87,6 +88,7 @@ fun GarageScreen(onAddVehicle: () -> Unit, onOpenVehicle: (String) -> Unit, onEd
     val showArchived by vm.showArchived.collectAsStateWithLifecycle()
     var topMenu by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf<VehicleSummary?>(null) }
+    val actions = LocalAppActions.current
 
     Scaffold(
         topBar = {
@@ -107,7 +109,7 @@ fun GarageScreen(onAddVehicle: () -> Unit, onOpenVehicle: (String) -> Unit, onEd
             )
         },
         floatingActionButton = {
-            // Free-tier gate for a 2nd vehicle (paywall) arrives in M4, after the user confirms intent.
+            // Free-tier gate for a 2nd vehicle lives in onAddVehicle (AppActions.requireVehicleSlot).
             if (!list.isNullOrEmpty()) {
                 ExtendedFloatingActionButton(
                     onClick = onAddVehicle,
@@ -131,7 +133,11 @@ fun GarageScreen(onAddVehicle: () -> Unit, onOpenVehicle: (String) -> Unit, onEd
                             s,
                             onOpen = { onOpenVehicle(s.vehicle.id) },
                             onEdit = { onEditVehicle(s.vehicle.id) },
-                            onArchive = { vm.setArchived(s.vehicle.id, !s.vehicle.archived) },
+                            onArchive = {
+                                // Bringing one back counts as adding an active vehicle.
+                                if (s.vehicle.archived) actions.requireVehicleSlot { vm.setArchived(s.vehicle.id, false) }
+                                else vm.setArchived(s.vehicle.id, true)
+                            },
                             onDelete = { confirmDelete = s },
                         )
                     }
