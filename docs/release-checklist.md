@@ -17,7 +17,7 @@
 - [ ] License testers (Settings › License testing) incl. your own Google account
 - [ ] Internal testing track → upload release AAB → install from Play on oulu
 - [ ] With a license tester on the Play-installed build: buy Pro (test card "always approves"), "slow test card" for pending, cancel; uninstall + reinstall → Pro restored
-- [ ] Store listing from `play-listing.md`; 7 screenshots; feature graphic 1024×500; hi-res icon 512×512
+- [ ] Store listing from `play-listing.md`; 7 screenshots are in `screenshots/play/` (2:1, Play-compliant; originals in `screenshots/`); still need feature graphic 1024×500 and hi-res icon 512×512
 - [ ] Privacy policy (`privacy-policy.md`) posted at a public URL → set `PRIVACY_POLICY_URL` in `DataSettings.kt`
 - [ ] Support email → set `SUPPORT_EMAIL` in `DataSettings.kt`
 - [ ] Data safety form from `data-safety.md`; content rating; target audience; ads = none
@@ -27,8 +27,8 @@
 
 - [ ] Min-SDK smoke: full loop on **API 26** (no API 26 device/emulator available here — this VM has no KVM). Also API 33 and current (oulu is current)
 - [ ] Clean install → vehicle → complete task → reminder → export → paywall decline, on min and current API
-- [ ] Large history: 10k records, scroll + filter without jank (§13)
-- [ ] Dark mode screenshots pass; TalkBack sanity pass
+- [x] Large history: 10k records — debug build scroll 1.8% janky frames, no ANR; search finds 1 of 10k (2026-10-02, oulu)
+- [x] Dark mode pass; TalkBack sanity: no unlabeled tap targets on 11 screens (fixed extended-FAB labels, 2026-10-02)
 
 ## Build
 

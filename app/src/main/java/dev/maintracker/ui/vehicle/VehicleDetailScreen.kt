@@ -1,5 +1,6 @@
 package dev.maintracker.ui.vehicle
 
+import dev.maintracker.ui.common.LabeledFab
 import androidx.compose.material3.SecondaryTabRow
 import dev.maintracker.ui.costs.CostsTab
 import dev.maintracker.ui.documents.DocumentsTab
@@ -133,11 +134,7 @@ fun VehicleDetailScreen(
         floatingActionButton = {
             // Logging is one tap from every tab that shows work (Build Guide §5.5).
             if (v != null && !v.archived && tab <= 2) {
-                ExtendedFloatingActionButton(
-                    onClick = { actions.openServiceSheet(ServiceSheetRequest(vehicleId = v.id)) },
-                    icon = { Icon(Icons.Filled.Build, contentDescription = null) },
-                    text = { Text("Log service") },
-                )
+                LabeledFab("Log service", Icons.Filled.Build, onClick = { actions.openServiceSheet(ServiceSheetRequest(vehicleId = v.id)) })
             }
         },
         topBar = {

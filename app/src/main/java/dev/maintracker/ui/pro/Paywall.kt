@@ -68,7 +68,7 @@ private fun pitch(f: ProFeature?) = when (f) {
     ProFeature.SECOND_VEHICLE ->
         "The free version covers one vehicle completely. Pro adds as many as you own: RV, tow car, boat, bikes."
     ProFeature.ATTACHMENTS -> "Pro stores receipts, photos and manuals on this phone, next to the work they belong to."
-    ProFeature.EXPORT -> "Pro saves everything to a file you choose, as JSON or a spreadsheet-friendly CSV."
+    ProFeature.EXPORT -> "Pro saves a full backup, photos and receipts included, to a place you choose, plus spreadsheets of your history and schedule."
     null -> "One payment unlocks every vehicle, attachments and export. No subscription."
 }
 

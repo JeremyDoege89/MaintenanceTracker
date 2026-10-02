@@ -1,5 +1,9 @@
 package dev.maintracker.ui.service
 
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.ViewModelStore
 import dev.maintracker.data.model.VendorType
 import dev.maintracker.domain.label
 
@@ -61,7 +65,15 @@ import dev.maintracker.ui.common.label
 fun ServiceSheet(request: ServiceSheetRequest, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val actions = LocalAppActions.current
-    val vm: ServiceSheetViewModel = viewModel(key = "sheet-$request") {
+    // One ViewModel per opening, cleared when the sheet leaves: keyed on the request alone it
+    // outlived the sheet, so reopening showed the old draft (and a stale "done" closed it at once).
+    val owner = remember {
+        object : ViewModelStoreOwner {
+            override val viewModelStore = ViewModelStore()
+        }
+    }
+    DisposableEffect(owner) { onDispose { owner.viewModelStore.clear() } }
+    val vm: ServiceSheetViewModel = viewModel(viewModelStoreOwner = owner) {
         ServiceSheetViewModel(context.app().repository, request)
     }
     val s by vm.state.collectAsStateWithLifecycle()

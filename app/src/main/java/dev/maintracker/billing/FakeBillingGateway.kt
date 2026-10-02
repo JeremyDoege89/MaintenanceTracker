@@ -46,7 +46,7 @@ class FakeBillingGateway(context: Context) : BillingGateway {
 
     override suspend fun queryOwned(): List<OwnedPurchase>? = if (offline) null else current()
 
-    override suspend fun proPrice(): String? = if (offline) null else "$9.99 (test)"
+    override suspend fun proPrice(): String? = if (offline) null else "$9.99"
 
     override suspend fun launchPurchase(activity: Activity): LaunchResult {
         if (offline) return LaunchResult.Unavailable("Can't reach Google Play right now (fake offline).")

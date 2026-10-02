@@ -44,15 +44,36 @@ class PhotoStore(private val context: Context) {
 
     /** Copies a picked/captured document into private storage (§3.6). Null if it can't be read. */
     fun importAttachment(source: Uri): Imported? {
-        val mime = context.contentResolver.getType(source) ?: "application/octet-stream"
-        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "bin"
-        val name = "${UUID.randomUUID()}.$ext"
-        val dest = File(attachmentsDir, name)
+        val tmp = File(attachmentsDir, "${UUID.randomUUID()}.part")
         val ok = runCatching {
-            context.contentResolver.openInputStream(source)?.use { input -> dest.outputStream().use { input.copyTo(it) } } != null
+            context.contentResolver.openInputStream(source)?.use { input -> tmp.outputStream().use { input.copyTo(it) } } != null
         }.getOrDefault(false)
-        if (!ok || dest.length() == 0L) { dest.delete(); return null }
-        return Imported(name, mime, dest.length())
+        if (!ok || tmp.length() == 0L) { tmp.delete(); return null }
+        // Providers don't always say (file:// URIs, some file managers): fall back to the
+        // name's extension, then to the file's own magic bytes, so photos still get thumbnails.
+        val mime = context.contentResolver.getType(source)?.takeUnless { it == GENERIC }
+            ?: source.lastPathSegment?.substringAfterLast('.', "")?.lowercase()
+                ?.let { MimeTypeMap.getSingleton().getMimeTypeFromExtension(it) }
+            ?: sniff(tmp)
+            ?: GENERIC
+        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "bin"
+        val dest = File(attachmentsDir, tmp.nameWithoutExtension + ".$ext")
+        if (!tmp.renameTo(dest)) { tmp.delete(); return null }
+        return Imported(dest.name, mime, dest.length())
+    }
+
+    private fun sniff(f: File): String? {
+        val h = ByteArray(12)
+        val n = f.inputStream().use { it.read(h) }
+        fun at(i: Int, vararg b: Int) = n >= i + b.size && b.indices.all { h[i + it] == b[it].toByte() }
+        return when {
+            at(0, 0xFF, 0xD8, 0xFF) -> "image/jpeg"
+            at(0, 0x89, 0x50, 0x4E, 0x47) -> "image/png"
+            at(0, 0x25, 0x50, 0x44, 0x46) -> "application/pdf" // %PDF
+            at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50) -> "image/webp" // RIFF....WEBP
+            at(4, 0x66, 0x74, 0x79, 0x70) && (at(8, 0x68, 0x65, 0x69, 0x63) || at(8, 0x6D, 0x69, 0x66, 0x31)) -> "image/heic"
+            else -> null
+        }
     }
 
     /** Writes bytes (from a backup) as a private attachment file. */
@@ -82,6 +103,8 @@ class PhotoStore(private val context: Context) {
     }
 
     private fun dirSize(dir: File): Long = dir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+
+    private companion object { const val GENERIC = "application/octet-stream" }
 
     private val authority get() = "${context.packageName}.files"
 

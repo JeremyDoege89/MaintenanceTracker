@@ -1,5 +1,6 @@
 package dev.maintracker.ui.garage
 
+import dev.maintracker.ui.common.LabeledFab
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -111,11 +112,7 @@ fun GarageScreen(onAddVehicle: () -> Unit, onOpenVehicle: (String) -> Unit, onEd
         floatingActionButton = {
             // Free-tier gate for a 2nd vehicle lives in onAddVehicle (AppActions.requireVehicleSlot).
             if (!list.isNullOrEmpty()) {
-                ExtendedFloatingActionButton(
-                    onClick = onAddVehicle,
-                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text("Add vehicle") },
-                )
+                LabeledFab("Add vehicle", Icons.Filled.Add, onClick = onAddVehicle)
             }
         },
     ) { pad ->

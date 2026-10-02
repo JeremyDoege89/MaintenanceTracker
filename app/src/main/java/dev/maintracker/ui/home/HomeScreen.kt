@@ -1,5 +1,6 @@
 package dev.maintracker.ui.home
 
+import dev.maintracker.ui.common.LabeledFab
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,11 +90,7 @@ fun HomeScreen(onAddVehicle: () -> Unit, onOpenTask: (String) -> Unit) {
         floatingActionButton = {
             // The single most-used action: one tap from Home (Build Guide §5.2).
             if (s.vehicleCount > 0) {
-                ExtendedFloatingActionButton(
-                    onClick = { actions.openServiceSheet(ServiceSheetRequest()) },
-                    icon = { Icon(Icons.Filled.Build, contentDescription = null) },
-                    text = { Text("Log service") },
-                )
+                LabeledFab("Log service", Icons.Filled.Build, onClick = { actions.openServiceSheet(ServiceSheetRequest()) })
             }
         },
     ) { pad ->

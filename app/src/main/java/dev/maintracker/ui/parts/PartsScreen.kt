@@ -1,5 +1,6 @@
 package dev.maintracker.ui.parts
 
+import dev.maintracker.ui.common.LabeledFab
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,11 +67,7 @@ fun PartsScreen(vehicleId: String, onBack: () -> Unit, onAdd: () -> Unit, onEdit
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onAdd,
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text("Add part") },
-            )
+            LabeledFab("Add part", Icons.Filled.Add, onClick = onAdd)
         },
     ) { pad ->
         Box(Modifier.padding(pad).fillMaxSize()) {

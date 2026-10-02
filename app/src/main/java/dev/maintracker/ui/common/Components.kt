@@ -1,5 +1,9 @@
 package dev.maintracker.ui.common
 
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -153,4 +157,23 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         enabled = enabled,
         modifier = modifier.heightIn(min = PrimaryButtonHeight),
     ) { Text(text, style = MaterialTheme.typography.labelLarge) }
+}
+
+/**
+ * Extended FAB whose label always reaches TalkBack. On this Material 3 version the inner Text of
+ * ExtendedFloatingActionButton doesn't appear in the accessibility tree (found in the M5 pass:
+ * the node was a nameless "button"), so the label, role and click are declared here explicitly.
+ */
+@Composable
+fun LabeledFab(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    androidx.compose.material3.ExtendedFloatingActionButton(
+        onClick = onClick,
+        icon = { androidx.compose.material3.Icon(icon, contentDescription = null) },
+        text = { Text(text) },
+        modifier = modifier.clearAndSetSemantics {
+            contentDescription = text
+            role = androidx.compose.ui.semantics.Role.Button
+            onClick { onClick(); true }
+        },
+    )
 }

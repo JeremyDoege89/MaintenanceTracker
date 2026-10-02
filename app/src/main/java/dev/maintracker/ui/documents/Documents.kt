@@ -1,5 +1,6 @@
 package dev.maintracker.ui.documents
 
+import dev.maintracker.ui.common.LabeledFab
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -213,11 +214,7 @@ fun AddAttachmentFab(vehicleId: String, recordId: String?, modifier: Modifier = 
     val adder = rememberAttachmentAdder(vehicleId, recordId)
     var menu by remember { mutableStateOf(false) }
     Box(modifier) {
-        ExtendedFloatingActionButton(
-            onClick = { adder.start { menu = true } },
-            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-            text = { Text(if (recordId == null) "Add document" else "Add photo / receipt") },
-        )
+        LabeledFab(if (recordId == null) "Add document" else "Add photo / receipt", Icons.Filled.Add, onClick = { adder.start { menu = true } })
         AddMenu(menu, onDismiss = { menu = false }, adder)
     }
     adder.Dialogs()

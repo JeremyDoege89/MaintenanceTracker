@@ -16,6 +16,7 @@ import dev.maintracker.data.model.Part
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VehicleType
 import dev.maintracker.domain.MeterReadings
+import androidx.room.withTransaction
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
@@ -28,6 +29,7 @@ import java.time.ZoneId
  *   adb shell am broadcast -n dev.maintracker/.DebugDataReceiver -a export_to --es name user.zip
  *   adb shell am broadcast -n dev.maintracker/.DebugDataReceiver -a import_from --es name user.zip
  *   adb shell am broadcast -n dev.maintracker/.DebugDataReceiver -a seed_demo
+ *   adb shell am broadcast -n dev.maintracker/.DebugDataReceiver -a seed_large --ei count 10000
  *
  * Files live in the app's cache dir (cache/debug/<name>). Logs under tag DebugData.
  */
@@ -46,6 +48,28 @@ class DebugDataReceiver : BroadcastReceiver() {
                     }
                     "import_from" -> Log.i(TAG, "imported: ${app.backups.import(Uri.fromFile(file))}")
                     "seed_demo" -> { seedDemo(app, dir); Log.i(TAG, "demo garage loaded") }
+                    "seed_large" -> {
+                        // §13 "Large history": N extra records on the first vehicle, straight into the DB.
+                        val n = intent.getIntExtra("count", 10_000)
+                        val v = app.database.vehicles().all().first()
+                        val areas = Area.entries
+                        val start = System.currentTimeMillis() - n * 3_600_000L
+                        app.database.withTransaction {
+                            run {
+                                for (i in 0 until n) {
+                                    app.database.records().insert(
+                                        dev.maintracker.data.model.ServiceRecord(
+                                            vehicleId = v.id, area = areas[i % areas.size], title = "Bulk job #$i",
+                                            description = "Synthetic history row for the 10k scroll test", date = start + i * 3_600_000L,
+                                            miles = 1000.0 + i, cost = (i % 50) * 3.5, currency = "USD",
+                                            vendor = if (i % 3 == 0) "Self" else "Shop ${i % 7}", createdAt = start + i * 3_600_000L,
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                        Log.i(TAG, "inserted $n records on ${v.name}")
+                    }
                 }
                 Log.i(TAG, "vehicles now: ${app.database.vehicles().all().map { it.name }}")
             } catch (e: Exception) {
