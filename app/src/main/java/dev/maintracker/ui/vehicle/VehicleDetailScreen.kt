@@ -1,5 +1,15 @@
 package dev.maintracker.ui.vehicle
 
+import androidx.compose.material3.SecondaryTabRow
+import dev.maintracker.ui.costs.CostsTab
+import dev.maintracker.ui.documents.DocumentsTab
+
+import dev.maintracker.domain.label
+
+import dev.maintracker.ui.common.toNumberOrNull
+import dev.maintracker.ui.common.toMeterInput
+import dev.maintracker.ui.common.toStoredMeter
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +88,6 @@ import dev.maintracker.data.model.TaskStatus
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.domain.DueText
 import dev.maintracker.domain.Format
-import dev.maintracker.ui.common.ComingLater
 import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.ServiceSheetRequest
 import dev.maintracker.ui.history.HistoryTab
@@ -182,8 +191,8 @@ fun VehicleDetailScreen(
                     onComplete = { t -> actions.openServiceSheet(ServiceSheetRequest(vehicleId = v.id, taskId = t.id)) },
                 )
                 2 -> HistoryTab(v.id, s.tasks, onOpenRecord)
-                3 -> ComingLater("Photos, receipts & manuals", "M5")
-                else -> ComingLater("Cost totals & breakdown", "M5")
+                3 -> DocumentsTab(v.id)
+                else -> CostsTab(v.id)
             }
         }
     }
@@ -259,7 +268,7 @@ private fun Overview(
         InfoCard("Readings") {
             val shown = v.vehicleType.meters
             shown.forEach { unit ->
-                KeyValue(unit.long, v.meter(unit)?.let { Format.meter(it, unit) } ?: "Not entered")
+                KeyValue(unit.label, v.meter(unit)?.let { Format.meter(it, unit) } ?: "Not entered")
             }
             staleMeterWarning(v)?.let {
                 Text(it, style = MaterialTheme.typography.bodyMedium, color = LocalStatus.dueSoonText())
@@ -340,48 +349,70 @@ private fun ScheduleList(
     onEditTask: (String) -> Unit,
     onComplete: (MaintenanceTask) -> Unit,
 ) {
-    val groups = listOf(
+    val all = listOf(
         "Overdue" to tasks.filter { it.isActive && it.status == TaskStatus.OVERDUE },
         "Due soon" to tasks.filter { it.isActive && it.status == TaskStatus.DUE_SOON },
         "Upcoming" to tasks.filter { it.isActive && it.status == TaskStatus.OK },
         "Checklist" to tasks.filter { it.isActive && it.status == TaskStatus.MANUAL },
         "Disabled" to tasks.filter { !it.isActive },
     ).filter { it.second.isNotEmpty() }
+    val due = all.filter { it.first == "Overdue" || it.first == "Due soon" }
+    var showAll by rememberSaveable { mutableStateOf(false) }
+    val groups = if (showAll) all else due
 
-    LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
-        item(key = "add") {
-            OutlinedButton(
-                onClick = onAddTask,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 48.dp),
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Add custom task")
-            }
+    Column {
+        SecondaryTabRow(selectedTabIndex = if (showAll) 1 else 0) {
+            Tab(selected = !showAll, onClick = { showAll = false }, modifier = Modifier.heightIn(min = 48.dp),
+                text = { Text("Due soon (${due.sumOf { it.second.size }})") })
+            Tab(selected = showAll, onClick = { showAll = true }, modifier = Modifier.heightIn(min = 48.dp),
+                text = { Text("All tasks (${tasks.size})") })
         }
-        if (groups.isEmpty()) {
-            item { Text("No scheduled tasks yet.", Modifier.padding(horizontal = 16.dp)) }
-        }
-        groups.forEach { (title, list) ->
-            item(key = "h-$title") {
-                Text("$title (${list.size})", style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp))
-            }
-            list.groupBy { it.area }.toSortedMap().forEach { (area, inArea) ->
-                item(key = "a-$title-$area") {
-                    Text(area.label.uppercase(), style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 2.dp))
+        LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+            item(key = "add") {
+                OutlinedButton(
+                    onClick = onAddTask,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 48.dp),
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Add custom task")
                 }
-                items(inArea, key = { it.id }) { t ->
-                    SwipeTaskRow(
-                        v, t,
-                        onOpen = { onOpenTask(t.id) },
-                        onComplete = { onComplete(t) },
-                        onEdit = { onEditTask(t.id) },
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+            }
+            if (groups.isEmpty()) {
+                item {
+                    if (showAll || tasks.isEmpty()) {
+                        Text("No scheduled tasks yet.", Modifier.padding(horizontal = 16.dp))
+                    } else {
+                        Column(Modifier.padding(horizontal = 16.dp)) {
+                            Text("Nothing overdue or due soon.", style = MaterialTheme.typography.titleMedium)
+                            TextButton(onClick = { showAll = true }, modifier = Modifier.heightIn(min = 48.dp)) {
+                                Text("See all ${tasks.size} tasks")
+                            }
+                        }
+                    }
+                }
+            }
+            groups.forEach { (title, list) ->
+                item(key = "h-$title") {
+                    Text("$title (${list.size})", style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp))
+                }
+                list.groupBy { it.area }.toSortedMap().forEach { (area, inArea) ->
+                    item(key = "a-$title-$area") {
+                        Text(area.label.uppercase(), style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 2.dp))
+                    }
+                    items(inArea, key = { it.id }) { t ->
+                        SwipeTaskRow(
+                            v, t,
+                            onOpen = { onOpenTask(t.id) },
+                            onComplete = { onComplete(t) },
+                            onEdit = { onEditTask(t.id) },
+                        )
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                    }
                 }
             }
         }
@@ -461,10 +492,9 @@ private fun TaskRow(t: MaintenanceTask, modifier: Modifier = Modifier) {
 @Composable
 private fun MetersDialog(v: Vehicle, onDismiss: () -> Unit, onSave: (Double?, Double?, Double?) -> Unit) {
     fun Double?.text() = this?.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() } ?: ""
-    var miles by remember { mutableStateOf(v.currentMiles.text()) }
+    var miles by remember { mutableStateOf(v.currentMiles.toMeterInput(MeterUnit.MILES)) }
     var eng by remember { mutableStateOf(v.currentEngineHours.text()) }
     var gen by remember { mutableStateOf(v.currentGeneratorHours.text()) }
-    fun parse(s: String) = s.replace(",", "").trim().toDoubleOrNull()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -480,7 +510,7 @@ private fun MetersDialog(v: Vehicle, onDismiss: () -> Unit, onSave: (Double?, Do
                     OutlinedTextField(
                         value = value,
                         onValueChange = { x -> set(x.filter { it.isDigit() || it == '.' || it == ',' }) },
-                        label = { Text(unit.long) },
+                        label = { Text(unit.label) },
                         singleLine = true,
                         textStyle = MaterialTheme.typography.headlineSmall,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -492,9 +522,9 @@ private fun MetersDialog(v: Vehicle, onDismiss: () -> Unit, onSave: (Double?, Do
             TextButton(onClick = {
                 val types = v.vehicleType.meters
                 onSave(
-                    if (MeterUnit.MILES in types) parse(miles) else v.currentMiles,
-                    if (MeterUnit.ENGINE_HOURS in types) parse(eng) else v.currentEngineHours,
-                    if (MeterUnit.GENERATOR_HOURS in types) parse(gen) else v.currentGeneratorHours,
+                    if (MeterUnit.MILES in types) miles.toStoredMeter(MeterUnit.MILES) else v.currentMiles,
+                    if (MeterUnit.ENGINE_HOURS in types) eng.toNumberOrNull() else v.currentEngineHours,
+                    if (MeterUnit.GENERATOR_HOURS in types) gen.toNumberOrNull() else v.currentGeneratorHours,
                 )
             }) { Text("Save") }
         },

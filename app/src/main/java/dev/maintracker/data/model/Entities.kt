@@ -1,5 +1,7 @@
 package dev.maintracker.data.model
 
+import kotlinx.serialization.Serializable
+
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
@@ -14,6 +16,7 @@ import java.util.UUID
 fun newId(): String = UUID.randomUUID().toString()
 
 @Entity(tableName = "vehicle")
+@Serializable
 data class Vehicle(
     @PrimaryKey val id: String = newId(),
     val name: String,
@@ -71,6 +74,7 @@ data class MaintenanceTemplate(
     ],
     indices = [Index("vehicleId"), Index("templateId"), Index("lastRecordId"), Index("status")],
 )
+@Serializable
 data class MaintenanceTask(
     @PrimaryKey val id: String = newId(),
     val vehicleId: String,
@@ -111,6 +115,7 @@ data class MaintenanceTask(
     ],
     indices = [Index("vehicleId"), Index("taskId"), Index("date")],
 )
+@Serializable
 data class ServiceRecord(
     @PrimaryKey val id: String = newId(),
     val vehicleId: String,
@@ -125,6 +130,8 @@ data class ServiceRecord(
     val cost: Double? = null,
     val currency: String,
     val vendor: String? = null,
+    /** Schema v2. Null on records from v1 (and when nobody was recorded). */
+    val vendorType: VendorType? = null,
     val partsText: String? = null,
     val notes: String? = null,
     val createdAt: Long,
@@ -138,6 +145,7 @@ data class ServiceRecord(
     ],
     indices = [Index("vehicleId"), Index("taskId")],
 )
+@Serializable
 data class Part(
     @PrimaryKey val id: String = newId(),
     val vehicleId: String,
@@ -161,6 +169,7 @@ data class Part(
     ],
     indices = [Index("vehicleId"), Index("serviceRecordId"), Index("taskId")],
 )
+@Serializable
 data class Attachment(
     @PrimaryKey val id: String = newId(),
     val vehicleId: String,

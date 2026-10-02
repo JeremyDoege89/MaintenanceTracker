@@ -1,5 +1,6 @@
 package dev.maintracker.ui.service
 
+import dev.maintracker.data.model.VendorType
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.maintracker.data.ServiceEntry
@@ -16,6 +17,8 @@ import dev.maintracker.domain.Format
 import dev.maintracker.domain.MeterReadings
 import dev.maintracker.ui.common.ServiceSheetRequest
 import dev.maintracker.ui.common.toInputText
+import dev.maintracker.ui.common.toMeterInput
+import dev.maintracker.ui.common.toStoredMeter
 import dev.maintracker.ui.common.toNumberOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,7 +42,9 @@ data class SheetForm(
     val generatorHours: String = "",
     val cost: String = "",
     val currency: String = Format.defaultCurrency(),
+    /** The name for Shop / Dealer / Mobile; unused for Self. */
     val vendor: String = "",
+    val vendorType: VendorType? = null,
     val partsText: String = "",
     val notes: String = "",
 ) {
@@ -55,7 +60,14 @@ data class SheetForm(
         MeterUnit.GENERATOR_HOURS -> copy(generatorHours = v)
     }
 
-    fun readings() = MeterReadings(miles.toNumberOrNull(), engineHours.toNumberOrNull(), generatorHours.toNumberOrNull())
+    /** What's stored: Self is recorded as the word "Self" so history and CSV read naturally. */
+    fun doneBy(): Pair<String?, VendorType?> = when (vendorType) {
+        null -> null to null
+        VendorType.SELF -> "Self" to VendorType.SELF
+        else -> vendor.trim().ifEmpty { null } to vendorType
+    }
+
+    fun readings() = MeterReadings(miles.toStoredMeter(MeterUnit.MILES), engineHours.toNumberOrNull(), generatorHours.toNumberOrNull())
 }
 
 data class SheetState(
@@ -112,7 +124,15 @@ class ServiceSheetViewModel(
     private suspend fun selectVehicleNow(id: String) {
         val v = repo.getVehicle(id) ?: return
         val tasks = repo.tasksFor(id).filter { it.isActive }.sortedWith(compareBy({ rank(it.status) }, { it.title }))
-        _state.update { it.copy(vehicle = v, tasks = tasks, task = null, errors = emptyMap()) }
+        _state.update {
+            // New entries start from the readings on the vehicle's profile; the user overtypes if they differ.
+            val form = if (it.editing != null) it.form else it.form.copy(
+                miles = v.currentMiles.toMeterInput(MeterUnit.MILES),
+                engineHours = v.currentEngineHours.toInputText(),
+                generatorHours = v.currentGeneratorHours.toInputText(),
+            )
+            it.copy(vehicle = v, tasks = tasks, task = null, form = form, errors = emptyMap())
+        }
     }
 
     /** Overdue first, then due soon — the tasks most likely being completed. */
@@ -160,8 +180,8 @@ class ServiceSheetViewModel(
                             area = f.area, title = f.title.trim(), description = f.description.clean(),
                             date = f.date, miles = f.readings().miles, engineHours = f.readings().engineHours,
                             generatorHours = f.readings().generatorHours, cost = f.cost.toNumberOrNull(),
-                            currency = f.currency, vendor = f.vendor.clean(), partsText = f.partsText.clean(),
-                            notes = f.notes.clean(),
+                            currency = f.currency, vendor = f.doneBy().first, vendorType = f.doneBy().second,
+                            partsText = f.partsText.clean(), notes = f.notes.clean(),
                         ),
                     )
                     SheetState.Done("Record updated", null)
@@ -171,8 +191,8 @@ class ServiceSheetViewModel(
                         ServiceEntry(
                             vehicleId = v.id, taskId = s.task?.id, area = f.area, title = f.title,
                             description = f.description.clean(), date = f.date, readings = f.readings(),
-                            cost = f.cost.toNumberOrNull(), currency = f.currency, vendor = f.vendor.clean(),
-                            partsText = f.partsText.clean(), notes = f.notes.clean(),
+                            cost = f.cost.toNumberOrNull(), currency = f.currency, vendor = f.doneBy().first,
+                            partsText = f.partsText.clean(), notes = f.notes.clean(), vendorType = f.doneBy().second,
                         ),
                     )
                     SheetState.Done("Logged: ${f.title.trim()}", undo)
@@ -213,8 +233,15 @@ class ServiceSheetViewModel(
 
     private fun ServiceRecord.toForm() = SheetForm(
         title = title, area = area, description = description.orEmpty(), date = date,
-        miles = miles.toInputText(), engineHours = engineHours.toInputText(), generatorHours = generatorHours.toInputText(),
-        cost = cost.toInputText(), currency = currency, vendor = vendor.orEmpty(), partsText = partsText.orEmpty(),
+        miles = miles.toMeterInput(MeterUnit.MILES), engineHours = engineHours.toInputText(), generatorHours = generatorHours.toInputText(),
+        cost = cost.toInputText(), currency = currency,
+        // v1 records have no type: "Self" maps to Self, any other name to Shop.
+        vendorType = vendorType ?: when {
+            vendor.isNullOrBlank() -> null
+            vendor.equals("self", ignoreCase = true) -> VendorType.SELF
+            else -> VendorType.SHOP
+        },
+        vendor = vendor.takeUnless { it.equals("self", ignoreCase = true) }.orEmpty(), partsText = partsText.orEmpty(),
         notes = notes.orEmpty(),
     )
 }

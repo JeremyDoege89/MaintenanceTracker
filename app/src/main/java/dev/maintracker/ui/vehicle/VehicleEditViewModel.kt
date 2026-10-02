@@ -1,5 +1,8 @@
 package dev.maintracker.ui.vehicle
 
+import dev.maintracker.ui.common.toMeterInput
+import dev.maintracker.ui.common.toStoredMeter
+
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -137,8 +140,8 @@ class VehicleEditViewModel(
                 model = f.model.trim().ifEmpty { null },
                 vinOrHin = f.vinOrHin.trim().uppercase().ifEmpty { null },
                 purchaseDate = f.purchaseDate,
-                purchaseMeter = f.purchaseMeter.toMeter(),
-                currentMiles = f.miles.toMeter(),
+                purchaseMeter = f.purchaseMeter.toStoredMeter(type.primaryMeter),
+                currentMiles = f.miles.toStoredMeter(MeterUnit.MILES),
                 currentEngineHours = f.engineHours.toMeter(),
                 currentGeneratorHours = f.generatorHours.toMeter(),
                 notes = f.notes.trim().ifEmpty { null },
@@ -189,8 +192,8 @@ class VehicleEditViewModel(
             model = model ?: "",
             vinOrHin = vinOrHin ?: "",
             purchaseDate = purchaseDate,
-            purchaseMeter = purchaseMeter.text(),
-            miles = currentMiles.text(),
+            purchaseMeter = purchaseMeter.toMeterInput(vehicleType.primaryMeter),
+            miles = currentMiles.toMeterInput(MeterUnit.MILES),
             engineHours = currentEngineHours.text(),
             generatorHours = currentGeneratorHours.text(),
             notes = notes ?: "",

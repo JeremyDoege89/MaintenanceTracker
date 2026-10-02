@@ -76,6 +76,10 @@ interface VehicleDao {
     @Insert
     suspend fun insert(vehicle: Vehicle)
 
+    /** Everything goes with them: tasks, records, parts, attachments, reminders cascade. */
+    @Query("DELETE FROM vehicle")
+    suspend fun deleteAll()
+
     @Update
     suspend fun update(vehicle: Vehicle)
 
@@ -89,6 +93,9 @@ interface TemplateDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore(templates: List<MaintenanceTemplate>)
 
+    @Query("SELECT id FROM maintenance_template")
+    suspend fun ids(): List<String>
+
     @Query("SELECT * FROM maintenance_template WHERE vehicleType = :type ORDER BY sortOrder")
     suspend fun forType(type: VehicleType): List<MaintenanceTemplate>
 
@@ -100,6 +107,9 @@ interface TemplateDao {
 interface TaskDao {
     @Insert
     suspend fun insertAll(tasks: List<MaintenanceTask>)
+
+    @Query("SELECT * FROM maintenance_task")
+    suspend fun all(): List<MaintenanceTask>
 
     @Update
     suspend fun updateAll(tasks: List<MaintenanceTask>)
@@ -149,6 +159,9 @@ interface ServiceRecordDao {
     @Insert
     suspend fun insert(record: ServiceRecord)
 
+    @Query("SELECT * FROM service_record ORDER BY date, createdAt")
+    suspend fun all(): List<ServiceRecord>
+
     @Update
     suspend fun update(record: ServiceRecord)
 
@@ -166,6 +179,9 @@ interface ServiceRecordDao {
 
     @Query("SELECT COUNT(*) FROM service_record WHERE vehicleId = :vehicleId")
     suspend fun countForVehicle(vehicleId: String): Int
+
+    @Query("SELECT * FROM service_record WHERE vehicleId = :vehicleId ORDER BY date DESC, createdAt DESC")
+    fun observeForVehicle(vehicleId: String): Flow<List<ServiceRecord>>
 
     /** History tab: filters are optional; [query] matches title, description, vendor, parts and notes. */
     @Query(
@@ -209,6 +225,9 @@ interface PartDao {
     @Insert
     suspend fun insert(part: Part)
 
+    @Query("SELECT * FROM part")
+    suspend fun all(): List<Part>
+
     @Update
     suspend fun update(part: Part)
 
@@ -235,6 +254,27 @@ interface AttachmentDao {
 
     @Query("SELECT * FROM attachment WHERE vehicleId = :vehicleId")
     suspend fun forVehicle(vehicleId: String): List<Attachment>
+
+    @Update
+    suspend fun update(attachment: Attachment)
+
+    @Delete
+    suspend fun delete(attachment: Attachment)
+
+    @Query("SELECT * FROM attachment WHERE vehicleId = :vehicleId ORDER BY createdAt DESC")
+    fun observeForVehicle(vehicleId: String): Flow<List<Attachment>>
+
+    @Query("SELECT * FROM attachment WHERE serviceRecordId = :recordId ORDER BY createdAt")
+    fun observeForRecord(recordId: String): Flow<List<Attachment>>
+
+    @Query("SELECT * FROM attachment WHERE serviceRecordId = :recordId")
+    suspend fun forRecord(recordId: String): List<Attachment>
+
+    @Query("UPDATE attachment SET serviceRecordId = :recordId WHERE id IN (:ids)")
+    suspend fun relink(ids: List<String>, recordId: String?)
+
+    @Query("SELECT * FROM attachment")
+    suspend fun all(): List<Attachment>
 
     @Query("SELECT * FROM attachment WHERE id = :id")
     suspend fun get(id: String): Attachment?

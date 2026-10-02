@@ -1,5 +1,8 @@
 package dev.maintracker.ui.common
 
+import dev.maintracker.data.model.MeterUnit
+import dev.maintracker.domain.Display
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -101,6 +104,15 @@ fun String.toNumberOrNull(): Double? = trim().replace(",", "").takeIf { it.isNot
 
 fun Double?.toInputText(): String =
     this?.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() } ?: ""
+
+/** Stored reading → field text in the user's unit (km shown to 0.1). */
+fun Double?.toMeterInput(u: MeterUnit): String = this?.let { v ->
+    val d = Display.toDisplay(v, u)
+    if (d == v) d else Math.round(d * 10) / 10.0
+}.toInputText()
+
+/** Field text in the user's unit → stored reading (miles for distance). */
+fun String.toStoredMeter(u: MeterUnit): Double? = toNumberOrNull()?.let { Display.fromDisplay(it, u) }
 
 /** Local calendar day <-> DatePicker's UTC-midnight millis. */
 object PickerDates {

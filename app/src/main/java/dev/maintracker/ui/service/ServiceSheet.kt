@@ -1,5 +1,8 @@
 package dev.maintracker.ui.service
 
+import dev.maintracker.data.model.VendorType
+import dev.maintracker.domain.label
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -149,8 +152,8 @@ fun ServiceSheet(request: ServiceSheetRequest, onDismiss: () -> Unit) {
             s.errors["meters"]?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             for (u in v.vehicleType.meters) {
                 MeterField(
-                    u.long, f.meterText(u), s.errors[u.name],
-                    supporting = v.meter(u)?.let { "Last: ${Format.meter(it, u)}" },
+                    u.label, f.meterText(u), s.errors[u.name],
+                    supporting = v.meter(u)?.let { "From the vehicle profile (${Format.meter(it, u)}). Change it if different." },
                 ) { vm.edit { withMeter(u, it) } }
             }
 
@@ -161,9 +164,9 @@ fun ServiceSheet(request: ServiceSheetRequest, onDismiss: () -> Unit) {
                         { c -> vm.edit { copy(currency = c.uppercase().filter(Char::isLetter).take(3)) } },
                         caps = KeyboardCapitalization.Characters, modifier = Modifier.width(110.dp))
                 }
-                Field("Done by", f.vendor, null, { vm.edit { copy(vendor = it) } },
-                    caps = KeyboardCapitalization.Words, placeholder = "Self, or shop name")
-                VendorChips(listOf("Self") + vendors.filterNot { it.equals("self", true) }) { vm.edit { copy(vendor = it) } }
+                DoneBy(f.vendorType, f.vendor, vendors.filterNot { it.equals("self", true) },
+                    onType = { t -> vm.edit { copy(vendorType = if (vendorType == t) null else t) } },
+                    onName = { n -> vm.edit { copy(vendor = n) } })
                 Field("Parts used", f.partsText, null, { vm.edit { copy(partsText = it) } },
                     caps = KeyboardCapitalization.Sentences, placeholder = "Wix 51515 filter, 5 qt 15W-40")
                 Field("Details", f.description, null, { vm.edit { copy(description = it) } },
@@ -183,6 +186,28 @@ fun ServiceSheet(request: ServiceSheetRequest, onDismiss: () -> Unit) {
 }
 
 @OptIn(ExperimentalLayoutApi::class)
+/** "Done by": four tabs; Shop / Dealer / Mobile open a name box with recent names one tap away. */
+@Composable
+private fun DoneBy(type: VendorType?, name: String, recent: List<String>, onType: (VendorType) -> Unit, onName: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Done by", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            VendorType.entries.forEachIndexed { i, t ->
+                SegmentedButton(
+                    selected = type == t, onClick = { onType(t) },
+                    shape = SegmentedButtonDefaults.itemShape(i, VendorType.entries.size),
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    label = { Text(t.label, maxLines = 1) },
+                )
+            }
+        }
+        type?.nameLabel?.let { label ->
+            Field(label, name, null, onName, caps = KeyboardCapitalization.Words)
+            if (recent.isNotEmpty()) VendorChips(recent, onName)
+        }
+    }
+}
+
 @Composable
 private fun VendorChips(vendors: List<String>, onPick: (String) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

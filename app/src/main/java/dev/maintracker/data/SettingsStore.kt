@@ -6,6 +6,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.maintracker.domain.DateStyle
+import dev.maintracker.domain.DisplayPrefs
+import dev.maintracker.domain.DistanceUnit
 import dev.maintracker.domain.DueCalculator
 import dev.maintracker.domain.ReminderPrefs
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +24,7 @@ data class AppSettings(
     val notificationPromptAnswered: Boolean = false,
     /** The one-time "reminders may be a little late" explainer has been shown. */
     val exactAlarmExplainerShown: Boolean = false,
+    val display: DisplayPrefs = DisplayPrefs(),
 )
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -34,6 +39,9 @@ class SettingsStore(private val context: Context) {
         val dueSoonDays = intPreferencesKey("due_soon_days")
         val promptAnswered = booleanPreferencesKey("notification_prompt_answered")
         val exactExplainer = booleanPreferencesKey("exact_alarm_explainer_shown")
+        val distance = stringPreferencesKey("distance_unit")
+        val dateStyle = stringPreferencesKey("date_style")
+        val currency = stringPreferencesKey("currency")
     }
 
     val flow: Flow<AppSettings> = context.dataStore.data.map { it.toSettings() }
@@ -53,6 +61,11 @@ class SettingsStore(private val context: Context) {
             dueSoonDays = this[K.dueSoonDays] ?: DueCalculator.MAX_LEAD_DAYS,
             notificationPromptAnswered = this[K.promptAnswered] ?: false,
             exactAlarmExplainerShown = this[K.exactExplainer] ?: false,
+            display = DisplayPrefs(
+                distance = this[K.distance]?.let { runCatching { DistanceUnit.valueOf(it) }.getOrNull() } ?: DistanceUnit.MILES,
+                dateStyle = this[K.dateStyle]?.let { runCatching { DateStyle.valueOf(it) }.getOrNull() } ?: DateStyle.SYSTEM,
+                currency = this[K.currency],
+            ),
         )
     }
 
@@ -66,5 +79,11 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setDueSoonDays(days: Int) = context.dataStore.edit { it[K.dueSoonDays] = days.coerceIn(1, 60) }
     suspend fun setNotificationPromptAnswered() = context.dataStore.edit { it[K.promptAnswered] = true }
+    suspend fun setDisplay(d: DisplayPrefs) = context.dataStore.edit {
+        it[K.distance] = d.distance.name
+        it[K.dateStyle] = d.dateStyle.name
+        if (d.currency == null) it.remove(K.currency) else it[K.currency] = d.currency
+    }
+
     suspend fun setExactAlarmExplainerShown() = context.dataStore.edit { it[K.exactExplainer] = true }
 }

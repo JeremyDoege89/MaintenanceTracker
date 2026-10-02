@@ -154,26 +154,3 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         modifier = modifier.heightIn(min = PrimaryButtonHeight),
     ) { Text(text, style = MaterialTheme.typography.labelLarge) }
 }
-
-@Composable
-fun ComingLater(title: String, milestone: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier.fillMaxSize().padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            Icons.Filled.Construction, contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp),
-        )
-        Text(
-            title, style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 12.dp), textAlign = TextAlign.Center,
-        )
-        Text(
-            "Arrives in $milestone.", style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-        )
-    }
-}

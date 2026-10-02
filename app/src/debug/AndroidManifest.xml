@@ -9,5 +9,9 @@
         <receiver
             android:name=".DebugBillingReceiver"
             android:exported="true" />
+        <!-- Debug builds only: export/import round trip on the real DB, and a demo garage for screenshots. -->
+        <receiver
+            android:name=".DebugDataReceiver"
+            android:exported="true" />
     </application>
 </manifest>

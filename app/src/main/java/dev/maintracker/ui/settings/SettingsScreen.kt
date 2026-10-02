@@ -175,17 +175,9 @@ fun SettingsScreen() {
             }
             if (BuildConfig.DEBUG) DebugBillingRows(app)
 
-            Section("Units")
-            Row("Miles / km, currency, date format", "Arrives in M5")
-            Section("Data")
-            Row("Export, import, delete all data", "Arrives in M5")
-            Section("About")
-            Row("Version", version)
-            Row(
-                "Privacy",
-                "Everything stays on this phone. No account, no analytics, no ads. " +
-                    "Nothing leaves unless you export it yourself.",
-            )
+            UnitsSection(settings.display)
+            DataSection()
+            AboutSection(version)
         }
     }
 
@@ -253,7 +245,7 @@ private fun WindowDialog(current: Int, onDismiss: () -> Unit, onSave: (Int) -> U
 }
 
 @Composable
-private fun Section(title: String) {
+internal fun Section(title: String) {
     HorizontalDivider()
     Text(
         title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
@@ -262,7 +254,7 @@ private fun Section(title: String) {
 }
 
 @Composable
-private fun Row(title: String, detail: String, onClick: (() -> Unit)? = null) {
+internal fun Row(title: String, detail: String, onClick: (() -> Unit)? = null) {
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(detail) },
@@ -271,7 +263,7 @@ private fun Row(title: String, detail: String, onClick: (() -> Unit)? = null) {
 }
 
 @Composable
-private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+internal fun SwitchRow(title: String, detail: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(detail) },

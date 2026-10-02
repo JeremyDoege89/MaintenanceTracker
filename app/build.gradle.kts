@@ -1,7 +1,10 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -13,13 +16,29 @@ android {
         applicationId = "dev.maintracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0-m4"
+        versionCode = 5
+        versionName = "0.5.0-m5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Upload key for Play App Signing, from a local keystore.properties that never goes in git:
+    //   storeFile=/abs/path/upload.jks  storePassword=…  keyAlias=upload  keyPassword=…
+    val keystoreProps = rootProject.file("keystore.properties").takeIf { it.isFile }?.let { f ->
+        Properties().apply { f.inputStream().use { load(it) } }
+    }
+    signingConfigs {
+        if (keystoreProps != null) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfigs.findByName("release")?.let { signingConfig = it }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -76,6 +95,7 @@ dependencies {
     implementation(libs.billing)
     implementation(libs.coroutines.android)
     implementation(platform(libs.serialization.bom))
+    implementation(libs.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)

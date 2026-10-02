@@ -9,6 +9,7 @@ import dev.maintracker.billing.DataStoreEntitlementCache
 import dev.maintracker.billing.FakeBillingGateway
 import dev.maintracker.billing.PlayBillingGateway
 import dev.maintracker.billing.ProManager
+import dev.maintracker.data.BackupManager
 import dev.maintracker.data.PhotoStore
 import dev.maintracker.data.SettingsStore
 import dev.maintracker.data.VehicleRepository
@@ -20,7 +21,11 @@ import dev.maintracker.reminders.ReminderEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import dev.maintracker.domain.Display
 import java.util.concurrent.TimeUnit
 
 class MaintTrackerApp : Application() {
@@ -46,8 +51,18 @@ class MaintTrackerApp : Application() {
         )
     }
 
+    val backups by lazy {
+        BackupManager(this, database, photos, repository, clearReminders = {
+            reminders.sync(null) // rows cascaded away; this cancels the alarm
+            androidx.core.app.NotificationManagerCompat.from(this).cancelAll()
+        })
+    }
+
     override fun onCreate() {
         super.onCreate()
+        // Units/date/currency must be right on the very first frame; it's one tiny prefs read.
+        Display.prefs = runBlocking { settings.current().display }
+        appScope.launch { settings.flow.map { it.display }.distinctUntilChanged().collect { Display.prefs = it } }
         notifier.createChannels()
         pro.start() // cached entitlement first, then queryPurchases on every cold start (Build Guide §10)
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(

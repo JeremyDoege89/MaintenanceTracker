@@ -25,6 +25,8 @@ class AppActions(
      * "yes, I want another vehicle" (Build Guide §5.3), so the paywall never comes first.
      */
     val requireVehicleSlot: (then: () -> Unit) -> Unit,
+    /** Runs [then] for Pro users; otherwise opens the paywall for [feature] and runs [then] after a purchase. */
+    val requirePro: (feature: dev.maintracker.domain.ProFeature, then: () -> Unit) -> Unit,
 )
 
 val LocalAppActions = staticCompositionLocalOf<AppActions> { error("AppActions not provided") }

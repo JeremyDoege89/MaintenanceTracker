@@ -1,5 +1,6 @@
 package dev.maintracker.ui.history
 
+import dev.maintracker.data.model.VendorType
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import dev.maintracker.data.model.MaintenanceTask
 import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.domain.Format
 import dev.maintracker.ui.common.InfoCard
+import dev.maintracker.ui.documents.RecordAttachments
 import dev.maintracker.ui.common.KeyValue
 import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.ServiceSheetRequest
@@ -114,14 +116,20 @@ fun RecordDetailScreen(recordId: String, onBack: () -> Unit, onOpenTask: (String
                     InfoCard("Details") {
                         meterSummary(r)?.let { KeyValue("Readings", it) }
                         r.cost?.let { KeyValue("Cost", Format.money(it, r.currency)) }
-                        r.vendor?.let { KeyValue("Done by", it) }
-                        if (meterSummary(r) == null && r.cost == null && r.vendor == null) {
+                        val doneBy = when {
+                            r.vendorType == null || r.vendorType == VendorType.SELF -> r.vendor
+                            r.vendor == null -> r.vendorType.label
+                            else -> "${r.vendor} (${r.vendorType.label})"
+                        }
+                        doneBy?.let { KeyValue("Done by", it) }
+                        if (meterSummary(r) == null && r.cost == null && doneBy == null) {
                             Text("No readings, cost or vendor entered.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     r.partsText?.let { InfoCard("Parts used") { Text(it) } }
                     r.description?.let { InfoCard("Work done") { Text(it) } }
                     r.notes?.let { InfoCard("Notes") { Text(it) } }
+                    InfoCard("Photos & receipts") { RecordAttachments(r.vehicleId, r.id) }
                 }
             }
         }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only what other apps may be handed: attachments (to view) and the camera's scratch file. -->
+<paths>
+    <files-path name="attachments" path="attachments/" />
+    <cache-path name="camera" path="camera/" />
+</paths>

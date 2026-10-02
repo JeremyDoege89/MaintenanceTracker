@@ -1,5 +1,11 @@
 package dev.maintracker.ui.task
 
+import dev.maintracker.domain.label
+
+import dev.maintracker.domain.Display
+import dev.maintracker.ui.common.toMeterInput
+import dev.maintracker.ui.common.toStoredMeter
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -124,11 +130,12 @@ class TaskEditViewModel(
         _state.update { it.copy(saving = true) }
         val f = s.form
         val days = f.every.trim().toIntOrNull()?.let(f.everyUnit::toDays)
-        val meter = f.meterEvery.toNumberOrNull()?.toInt()
+        val unit = f.meterUnit ?: s.vehicle?.vehicleType?.primaryMeter ?: MeterUnit.MILES
+        val meter = f.meterEvery.toStoredMeter(unit)?.let { Math.round(it).toInt() }
         viewModelScope.launch {
             val base = s.existing ?: MaintenanceTask(
                 vehicleId = vehicleId, area = f.area, title = "", baselineDate = f.lastDone,
-                baselineMeter = f.lastMeter.toNumberOrNull(), status = TaskStatus.OK, leadDays = 0,
+                baselineMeter = f.lastMeter.toStoredMeter(unit), status = TaskStatus.OK, leadDays = 0,
                 sortOrder = 1_000, createdAt = 0, updatedAt = 0,
             )
             repo.saveTask(
@@ -141,7 +148,7 @@ class TaskEditViewModel(
                     meterInterval = meter,
                     meterUnit = (f.meterUnit ?: s.vehicle?.vehicleType?.primaryMeter).takeIf { meter != null },
                     baselineDate = f.lastDone,
-                    baselineMeter = f.lastMeter.toNumberOrNull(),
+                    baselineMeter = f.lastMeter.toStoredMeter(unit),
                     notes = f.notes.trim().ifEmpty { null },
                     notifyEnabled = f.notify,
                 ),
@@ -162,8 +169,9 @@ class TaskEditViewModel(
         return TaskForm(
             area = area, areaDetail = areaDetail.orEmpty(), title = title, description = description.orEmpty(),
             every = n?.toString() ?: "", everyUnit = unit,
-            meterEvery = meterInterval?.toString() ?: "", meterUnit = meterUnit,
-            lastDone = baselineDate, lastMeter = baselineMeter.toInputText(), notes = notes.orEmpty(),
+            meterEvery = meterUnit?.let { u -> meterInterval?.let { Math.round(Display.toDisplay(it.toDouble(), u)).toString() } } ?: "",
+            meterUnit = meterUnit,
+            lastDone = baselineDate, lastMeter = meterUnit?.let { baselineMeter.toMeterInput(it) } ?: baselineMeter.toInputText(), notes = notes.orEmpty(),
             notify = notifyEnabled,
         )
     }
@@ -223,14 +231,14 @@ fun TaskEditScreen(vehicleId: String, taskId: String?, onDone: () -> Unit, onCan
                     MeterField("Or every", f.meterEvery, s.errors["meterEvery"], modifier = Modifier.width(150.dp)) {
                         vm.edit { copy(meterEvery = it) }
                     }
-                    Dropdown("Meter", units, f.meterUnit ?: units.first(), { it.long }, vm::setMeterUnit,
+                    Dropdown("Meter", units, f.meterUnit ?: units.first(), { it.label }, vm::setMeterUnit,
                         modifier = Modifier.weight(1f))
                 }
 
                 SectionLabel(if (s.existing == null) "Last done" else "Counting from")
                 DateField("Date", f.lastDone, { day -> day?.let(vm::setLastDone) })
                 if (f.meterEvery.isNotBlank()) {
-                    MeterField("${(f.meterUnit ?: units.first()).long} when last done", f.lastMeter, s.errors["lastMeter"],
+                    MeterField("${(f.meterUnit ?: units.first()).label} when last done", f.lastMeter, s.errors["lastMeter"],
                         supporting = "Leave blank to start from the next reading you enter") { vm.edit { copy(lastMeter = it) } }
                 }
 

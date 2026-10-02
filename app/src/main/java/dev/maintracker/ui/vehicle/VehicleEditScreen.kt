@@ -1,5 +1,7 @@
 package dev.maintracker.ui.vehicle
 
+import dev.maintracker.domain.label
+
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -212,7 +214,7 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
                 MeterUnit.ENGINE_HOURS -> f.engineHours to "engineHours"
                 MeterUnit.GENERATOR_HOURS -> f.generatorHours to "generatorHours"
             }
-            MeterField(unit.long, value, s.errors[key]) { v ->
+            MeterField(unit.label, value, s.errors[key]) { v ->
                 vm.edit {
                     when (unit) {
                         MeterUnit.MILES -> copy(miles = v)
@@ -236,7 +238,7 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
             },
             modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
         )
-        MeterField("${type.primaryMeter.long} at purchase", f.purchaseMeter, s.errors["purchaseMeter"]) {
+        MeterField("${type.primaryMeter.label} at purchase", f.purchaseMeter, s.errors["purchaseMeter"]) {
             vm.edit { copy(purchaseMeter = it) }
         }
 

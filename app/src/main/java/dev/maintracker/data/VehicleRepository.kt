@@ -4,12 +4,15 @@ import androidx.room.withTransaction
 import dev.maintracker.data.db.AppDatabase
 import dev.maintracker.data.db.DueItem
 import dev.maintracker.data.db.VehicleSummary
+import dev.maintracker.data.model.AttachmentKind
+import dev.maintracker.data.model.Attachment
 import dev.maintracker.data.model.Area
 import dev.maintracker.data.model.MaintenanceTask
 import dev.maintracker.data.model.Part
 import dev.maintracker.data.model.MaintenanceTemplate
 import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.data.model.Vehicle
+import dev.maintracker.data.model.VendorType
 import dev.maintracker.data.model.VehicleType
 import dev.maintracker.data.seed.SeedTemplates
 import dev.maintracker.domain.DueCalculator
@@ -33,6 +36,7 @@ data class ServiceEntry(
     val vendor: String?,
     val partsText: String?,
     val notes: String?,
+    val vendorType: VendorType? = null,
 )
 
 /** Everything one write changed, so the 10-second Undo can put it back exactly. */
@@ -41,6 +45,8 @@ class UndoSnapshot internal constructor(
     internal val task: MaintenanceTask?,
     internal val insertedRecordId: String?,
     internal val deletedRecord: ServiceRecord?,
+    /** Attachments unlinked from [deletedRecord] (kept in the vehicle's Documents); undo relinks them. */
+    internal val detachedAttachments: List<String> = emptyList(),
 )
 
 class VehicleRepository(
@@ -72,6 +78,33 @@ class VehicleRepository(
     fun observeRecord(id: String): Flow<ServiceRecord?> = records.observe(id)
     fun observeHistory(vehicleId: String, area: Area?, taskId: String?, query: String): Flow<List<ServiceRecord>> =
         records.observeHistory(vehicleId, area, taskId, query.trim())
+    // ---- Attachments (Build Guide §3.6; Pro-gated in the UI, never in the data layer) ----
+
+    fun observeAttachments(vehicleId: String): Flow<List<Attachment>> = db.attachments().observeForVehicle(vehicleId)
+    fun observeRecordAttachments(recordId: String): Flow<List<Attachment>> = db.attachments().observeForRecord(recordId)
+
+    /** Copies [source] into private storage and records it. Null if the file can't be read. */
+    suspend fun addAttachment(
+        vehicleId: String, source: android.net.Uri, kind: AttachmentKind, caption: String?, recordId: String? = null,
+    ): Attachment? {
+        val file = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { photos.importAttachment(source) } ?: return null
+        val a = Attachment(
+            vehicleId = vehicleId, serviceRecordId = recordId, kind = kind, fileName = file.fileName,
+            mimeType = file.mimeType, byteSize = file.byteSize, caption = caption?.trim()?.ifEmpty { null },
+            createdAt = clock(),
+        )
+        db.attachments().insert(a)
+        return a
+    }
+
+    suspend fun updateAttachment(a: Attachment) = db.attachments().update(a)
+
+    suspend fun deleteAttachment(a: Attachment) {
+        db.attachments().delete(a)
+        photos.deleteAttachment(a.fileName)
+    }
+
+    fun observeAllRecords(vehicleId: String): Flow<List<ServiceRecord>> = records.observeForVehicle(vehicleId)
     fun observeRecordsForTask(taskId: String): Flow<List<ServiceRecord>> = records.observeForTask(taskId)
     fun observeRecentVendors(limit: Int = 6): Flow<List<String>> = records.observeRecentVendors(limit)
     fun observeParts(vehicleId: String): Flow<List<Part>> = parts.observeForVehicle(vehicleId)
@@ -168,7 +201,7 @@ class VehicleRepository(
                 vehicleId = e.vehicleId, taskId = oldTask?.id, area = e.area, title = e.title.trim(),
                 description = e.description, date = e.date,
                 miles = e.readings.miles, engineHours = e.readings.engineHours, generatorHours = e.readings.generatorHours,
-                cost = e.cost, currency = e.currency, vendor = e.vendor, partsText = e.partsText, notes = e.notes,
+                cost = e.cost, currency = e.currency, vendor = e.vendor, vendorType = e.vendorType, partsText = e.partsText, notes = e.notes,
                 createdAt = now,
             )
             records.insert(record)
@@ -225,6 +258,9 @@ class VehicleRepository(
         return db.withTransaction {
             val rec = records.get(id) ?: return@withTransaction null
             val oldTask = rec.taskId?.let { tasks.get(it) }
+            // Receipts outlive the record: they move to the vehicle's Documents instead of cascading away.
+            val detached = db.attachments().forRecord(rec.id).map { it.id }
+            db.attachments().relink(detached, null)
             records.delete(rec) // FK nulls task.lastRecordId; we set the right value below.
             if (oldTask != null) {
                 var t = oldTask.copy(completedCount = (oldTask.completedCount - 1).coerceAtLeast(0), updatedAt = now)
@@ -240,15 +276,22 @@ class VehicleRepository(
                 tasks.update(t)
             }
             vehicles.get(rec.vehicleId)?.let { refreshTasks(it, now) }
-            UndoSnapshot(null, oldTask, null, rec)
+            UndoSnapshot(null, oldTask, null, rec, detached)
         }?.also { onChanged(it.deletedRecord?.vehicleId) }
     }
 
     suspend fun undo(s: UndoSnapshot) {
         val now = clock()
         db.withTransaction {
-            s.insertedRecordId?.let { id -> records.get(id)?.let { records.delete(it) } }
-            s.deletedRecord?.let { records.insert(it) }
+            s.insertedRecordId?.let { id ->
+                // Anything attached in the undo window goes too; rows cascade, files we remove.
+                db.attachments().forRecord(id).forEach { photos.deleteAttachment(it.fileName) }
+                records.get(id)?.let { records.delete(it) }
+            }
+            s.deletedRecord?.let {
+                records.insert(it)
+                if (s.detachedAttachments.isNotEmpty()) db.attachments().relink(s.detachedAttachments, it.id)
+            }
             s.vehicle?.let { vehicles.update(it) }
             s.task?.let { tasks.update(it) }
             vehicleId(s)?.let { vehicles.get(it) }?.let { refreshTasks(it, now) }

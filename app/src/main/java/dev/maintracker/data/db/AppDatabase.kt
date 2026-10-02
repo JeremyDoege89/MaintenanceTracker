@@ -35,15 +35,22 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun reminders(): ReminderDao
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
         const val NAME = "maintracker.db"
 
         /** Every schema bump adds its Migration here; never fallbackToDestructiveMigration. */
-        val MIGRATIONS = arrayOf<androidx.room.migration.Migration>()
+        val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2)
 
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, NAME)
                 .addMigrations(*MIGRATIONS)
                 .build()
+    }
+}
+
+/** v2: who did the work (Self / Shop / Dealer / Mobile). Nullable: older records simply have none. */
+val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+    override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE service_record ADD COLUMN vendorType TEXT")
     }
 }

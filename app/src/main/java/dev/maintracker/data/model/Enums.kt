@@ -60,6 +60,14 @@ enum class MeterUnit(val short: String, val long: String) {
     GENERATOR_HOURS("gen hrs", "Generator hours"),
 }
 
+/** Who did the work (the "Done by" tabs). Shop / Dealer / Mobile carry a name in ServiceRecord.vendor. */
+enum class VendorType(val label: String, val nameLabel: String?) {
+    SELF("Self", null),
+    SHOP("Shop", "Shop name"),
+    DEALER("Dealer", "Dealer name"),
+    MOBILE("Mobile", "Mechanic or business name"),
+}
+
 enum class TaskStatus { OK, DUE_SOON, OVERDUE, MANUAL }
 
 enum class AttachmentKind { PHOTO, RECEIPT, MANUAL, INSURANCE, OTHER }

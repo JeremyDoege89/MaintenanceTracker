@@ -152,6 +152,16 @@ fun AppNav(openTask: MutableStateFlow<String?>) {
                     }
                 }
             },
+            requirePro = { feature, then ->
+                uiScope.launch {
+                    if (context.app().pro.status.first { it.loaded }.isPro) {
+                        then()
+                    } else {
+                        paywallMessage = null
+                        paywall = PaywallRequest(feature, onUnlocked = then)
+                    }
+                }
+            },
         )
     }
 
