@@ -1,0 +1,1827 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": 1,
+  "rules": {
+    "unansweredSingle": "Treat as 'Not sure': every tag and maybeTag of its visible options becomes a maybe tag.",
+    "unansweredMulti": "Means 'none of these': contributes no tags.",
+    "hiddenQuestions": "Questions whose showIf fails, or with phase > 1, are ignored entirely.",
+    "matching": "recommended = phase 1, not retired, same vehicleType, appliesTo contains 'all' or any confirmed tag; mightApply = other phase-1 templates whose appliesTo contains any maybe tag."
+  },
+  "derivedTags": [
+    {
+      "tag": "saltwater_launch",
+      "allOf": [
+        "trailered",
+        "saltwater_use"
+      ]
+    }
+  ],
+  "runtimeTags": [
+    {
+      "tag": "while_in_storage",
+      "meaning": "Vehicle is currently in storage mode (phase 2)."
+    },
+    {
+      "tag": "tires_over_5_years",
+      "meaning": "Tire manufacture date is more than 5 years ago (phase 2)."
+    }
+  ],
+  "makeHints": [
+    {
+      "vehicleType": "MOTORCYCLE",
+      "makePattern": "(?i)harley",
+      "questionId": "mc_brand",
+      "optionId": "harley"
+    },
+    {
+      "vehicleType": "PWC",
+      "makePattern": "(?i)sea[- ]?doo",
+      "questionId": "pwc_brand",
+      "optionId": "sea_doo"
+    },
+    {
+      "vehicleType": "PWC",
+      "makePattern": "(?i)yamaha|waverunner",
+      "questionId": "pwc_brand",
+      "optionId": "yamaha"
+    },
+    {
+      "vehicleType": "PWC",
+      "makePattern": "(?i)kawasaki|jet ?ski",
+      "questionId": "pwc_brand",
+      "optionId": "kawasaki"
+    }
+  ],
+  "commonMakes": {
+    "MOTORHOME": [
+      "Airstream",
+      "Coachmen",
+      "Entegra Coach",
+      "Fleetwood RV",
+      "Forest River",
+      "Holiday Rambler",
+      "Jayco",
+      "Leisure Travel Vans",
+      "Newmar",
+      "Pleasure-Way",
+      "Thor Motor Coach",
+      "Tiffin",
+      "Winnebago"
+    ],
+    "TRAVEL_TRAILER": [
+      "Airstream",
+      "Alliance RV",
+      "Brinkley",
+      "Casita",
+      "Coachmen",
+      "Dutchmen",
+      "Forest River",
+      "Grand Design",
+      "Heartland",
+      "Jayco",
+      "Keystone",
+      "KZ RV",
+      "Lance",
+      "Oliver",
+      "Palomino",
+      "Venture RV",
+      "Winnebago"
+    ],
+    "BOAT_POWER": [
+      "Bayliner",
+      "Bennington",
+      "Boston Whaler",
+      "Chaparral",
+      "Cobalt",
+      "Crestliner",
+      "Grady-White",
+      "Lund",
+      "Malibu",
+      "MasterCraft",
+      "Ranger",
+      "Regal",
+      "Robalo",
+      "Sea Fox",
+      "Sea Ray",
+      "Sportsman",
+      "Tracker"
+    ],
+    "BOAT_SAIL": [
+      "Beneteau",
+      "C&C",
+      "Catalina",
+      "Dufour",
+      "Hallberg-Rassy",
+      "Hanse",
+      "Hunter",
+      "Island Packet",
+      "J/Boats",
+      "Jeanneau",
+      "Lagoon",
+      "Leopard",
+      "O'Day",
+      "Pearson",
+      "Sabre",
+      "Tartan"
+    ],
+    "MOTORCYCLE": [
+      "Aprilia",
+      "BMW",
+      "Ducati",
+      "Harley-Davidson",
+      "Honda",
+      "Husqvarna",
+      "Indian",
+      "Kawasaki",
+      "KTM",
+      "Moto Guzzi",
+      "Royal Enfield",
+      "Suzuki",
+      "Triumph",
+      "Yamaha"
+    ],
+    "ATV_UTV": [
+      "Arctic Cat",
+      "Can-Am",
+      "CFMOTO",
+      "Honda",
+      "John Deere",
+      "Kawasaki",
+      "Kubota",
+      "Polaris",
+      "Segway Powersports",
+      "Suzuki",
+      "Textron Off Road",
+      "Yamaha"
+    ],
+    "PWC": [
+      "Kawasaki",
+      "Sea-Doo",
+      "Yamaha"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mh_chassis",
+      "vehicleTypes": [
+        "MOTORHOME"
+      ],
+      "phase": 1,
+      "prompt": "What chassis is it built on?",
+      "help": "The coach brand (Winnebago, Thor, Tiffin...) doesn't tell you this. Check the owner's manual, the title or the chassis plate.",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "ford_f53",
+          "label": "Ford F-53 (gas Class A)",
+          "tags": [
+            "ford_f53"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "ford_e_series",
+          "label": "Ford E-Series (gas Class C)",
+          "tags": [
+            "ford_e_series"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "diesel_pusher",
+          "label": "Diesel pusher (Freightliner, Spartan, etc.)",
+          "tags": [
+            "diesel_pusher"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "sprinter",
+          "label": "Mercedes Sprinter",
+          "tags": [
+            "mercedes_sprinter"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "transit",
+          "label": "Ford Transit",
+          "tags": [
+            "ford_transit"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "promaster",
+          "label": "Ram ProMaster",
+          "tags": [
+            "ram_promaster"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "other",
+          "label": "Other chassis",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "ford_f53",
+            "ford_e_series",
+            "diesel_pusher",
+            "mercedes_sprinter",
+            "ford_transit",
+            "ram_promaster"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mh_allison",
+      "vehicleTypes": [
+        "MOTORHOME"
+      ],
+      "phase": 1,
+      "prompt": "Which Allison transmission fluid does it use?",
+      "help": "Check your service records or the label near the fill tube.",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "mh_chassis",
+        "anyOptionOf": [
+          "diesel_pusher"
+        ]
+      },
+      "options": [
+        {
+          "id": "tes295",
+          "label": "TES 295 synthetic (TranSynd or equivalent)",
+          "tags": [
+            "allison_tes295"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "conventional",
+          "label": "Conventional (Dexron / TES 389)",
+          "tags": [
+            "allison_non_tes295"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "allison_tes295",
+            "allison_non_tes295"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tt_hitch",
+      "vehicleTypes": [
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "How does it hitch up?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "bumper_pull",
+          "label": "Bumper pull",
+          "tags": [
+            "bumper_pull"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "fifth_wheel",
+          "label": "Fifth wheel",
+          "tags": [
+            "fifth_wheel"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "tt_brakes",
+      "vehicleTypes": [
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "What brakes does it have?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "electric",
+          "label": "Electric drum brakes (most RVs)",
+          "tags": [
+            "electric_brakes"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "other",
+          "label": "Other or none",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "electric_brakes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tt_suspension",
+      "vehicleTypes": [
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "What suspension does it have?",
+      "help": "Leaf springs are visible steel strips above or below the axle; torsion axles have none.",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "leaf",
+          "label": "Leaf springs",
+          "tags": [
+            "leaf_spring"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "torsion",
+          "label": "Torsion axles",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "leaf_spring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_generator",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "Does it have an onboard generator?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "gas",
+          "label": "Yes, gasoline or propane",
+          "tags": [
+            "gas_generator"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "diesel",
+          "label": "Yes, diesel",
+          "tags": [
+            "diesel_generator"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "none",
+          "label": "No",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "gas_generator",
+            "diesel_generator"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_slides",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "Does it have slide-outs?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "none",
+          "label": "No slide-outs",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "in_wall",
+          "label": "Yes, in-wall (Schwintek)",
+          "tags": [
+            "slide_outs"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "rack",
+          "label": "Yes, rack-and-pinion or through-frame",
+          "tags": [
+            "slide_outs",
+            "slide_outs_rack_pinion"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "hydraulic",
+          "label": "Yes, hydraulic",
+          "tags": [
+            "slide_outs",
+            "slide_outs_hydraulic"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "unknown_type",
+          "label": "Yes, not sure which kind",
+          "tags": [
+            "slide_outs"
+          ],
+          "maybeTags": [
+            "slide_outs_rack_pinion",
+            "slide_outs_hydraulic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_water_heater",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "What kind of water heater?",
+      "help": "The brand is on the outside access door.",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "suburban",
+          "label": "Suburban (steel tank with anode rod)",
+          "tags": [
+            "suburban_water_heater"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "atwood",
+          "label": "Atwood or Dometic (aluminum tank)",
+          "tags": [
+            "aluminum_tank_water_heater"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "tankless",
+          "label": "Tankless / on-demand",
+          "tags": [
+            "tankless_water_heater"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "suburban_water_heater",
+            "aluminum_tank_water_heater",
+            "tankless_water_heater"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_fridge",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "What kind of refrigerator?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "absorption",
+          "label": "Propane/electric (absorption)",
+          "tags": [
+            "absorption_fridge"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "residential",
+          "label": "Residential or 12V compressor",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "absorption_fridge"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_propane",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "How is the propane stored?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "cylinders",
+          "label": "Removable cylinders (usually on the tongue)",
+          "tags": [
+            "dot_lp_cylinders"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "built_in",
+          "label": "Built-in tank",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "dot_lp_cylinders"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_batteries",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "What house batteries does it have?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "flooded",
+          "label": "Flooded lead-acid (you add water)",
+          "tags": [
+            "lead_acid_battery"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "agm",
+          "label": "AGM (sealed)",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "lithium",
+          "label": "Lithium (LiFePO4)",
+          "tags": [
+            "lithium_battery"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "lead_acid_battery",
+            "lithium_battery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rv_equipment",
+      "vehicleTypes": [
+        "MOTORHOME",
+        "TRAVEL_TRAILER"
+      ],
+      "phase": 1,
+      "prompt": "Which of these does it have?",
+      "type": "MULTI",
+      "required": false,
+      "options": [
+        {
+          "id": "awning",
+          "label": "Awning",
+          "tags": [
+            "awning"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "leveling",
+          "label": "Powered leveling jacks",
+          "tags": [
+            "leveling_jacks"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "pb_propulsion",
+      "vehicleTypes": [
+        "BOAT_POWER"
+      ],
+      "phase": 1,
+      "prompt": "What powers it? (Select all that apply.)",
+      "type": "MULTI",
+      "required": true,
+      "options": [
+        {
+          "id": "outboard_4s",
+          "label": "Outboard, 4-stroke",
+          "tags": [
+            "outboard_4stroke"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "outboard_2s",
+          "label": "Outboard, 2-stroke (incl. DFI)",
+          "tags": [
+            "outboard_2stroke"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "sterndrive",
+          "label": "Sterndrive / inboard-outboard (I/O)",
+          "tags": [
+            "sterndrive"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "inboard_gas",
+          "label": "Inboard, gas (incl. V-drive)",
+          "tags": [
+            "inboard_gas"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "inboard_diesel",
+          "label": "Inboard, diesel",
+          "tags": [
+            "inboard_diesel"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "jet",
+          "label": "Jet drive",
+          "tags": [
+            "jet_drive"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "pb_shaft_seal",
+      "vehicleTypes": [
+        "BOAT_POWER"
+      ],
+      "phase": 1,
+      "prompt": "What kind of shaft seal?",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "pb_propulsion",
+        "anyOptionOf": [
+          "inboard_gas",
+          "inboard_diesel"
+        ]
+      },
+      "options": [
+        {
+          "id": "stuffing_box",
+          "label": "Traditional stuffing box (packing)",
+          "tags": [
+            "stuffing_box"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "dripless",
+          "label": "Dripless shaft seal",
+          "tags": [
+            "dripless_seal"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "stuffing_box",
+            "dripless_seal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pb_cooling",
+      "vehicleTypes": [
+        "BOAT_POWER"
+      ],
+      "phase": 1,
+      "prompt": "How is the engine cooled?",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "pb_propulsion",
+        "anyOptionOf": [
+          "sterndrive",
+          "inboard_gas",
+          "inboard_diesel"
+        ]
+      },
+      "options": [
+        {
+          "id": "raw",
+          "label": "Raw-water cooled",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "closed",
+          "label": "Closed (freshwater) cooling with a heat exchanger",
+          "tags": [
+            "freshwater_cooled"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "freshwater_cooled"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pb_size",
+      "vehicleTypes": [
+        "BOAT_POWER"
+      ],
+      "phase": 2,
+      "prompt": "Is the boat under 26 feet?",
+      "help": "Used for the engine cut-off lanyard check (phase 2).",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "tags": [
+            "under_26ft"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "tags": [],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "sb_aux",
+      "vehicleTypes": [
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "What auxiliary engine does it have?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "diesel",
+          "label": "Inboard diesel",
+          "tags": [
+            "inboard_diesel"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "outboard",
+          "label": "Outboard",
+          "tags": [
+            "outboard_aux"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "none",
+          "label": "No engine",
+          "tags": [],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "sb_drive",
+      "vehicleTypes": [
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "How does the engine drive the prop?",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "sb_aux",
+        "anyOptionOf": [
+          "diesel"
+        ]
+      },
+      "options": [
+        {
+          "id": "shaft_box",
+          "label": "Prop shaft with a stuffing box",
+          "tags": [
+            "shaft_drive",
+            "stuffing_box"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "shaft_dripless",
+          "label": "Prop shaft with a dripless seal",
+          "tags": [
+            "shaft_drive",
+            "dripless_seal"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "saildrive_volvo",
+          "label": "Volvo Penta saildrive",
+          "tags": [
+            "saildrive_volvo"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "saildrive_other",
+          "label": "Yanmar or other saildrive",
+          "tags": [
+            "saildrive_other"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "shaft_drive",
+            "stuffing_box",
+            "dripless_seal",
+            "saildrive_volvo",
+            "saildrive_other"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sb_engine_zincs",
+      "vehicleTypes": [
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "Does the engine have zinc pencil anodes?",
+      "help": "Common on Westerbeke, Beta and some Yanmar models.",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "sb_aux",
+        "anyOptionOf": [
+          "diesel"
+        ]
+      },
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "tags": [
+            "engine_zincs"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "engine_zincs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sb_rigging",
+      "vehicleTypes": [
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "What is the standing rigging made of?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "wire",
+          "label": "Wire (most boats)",
+          "tags": [
+            "wire_rigging"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "rod",
+          "label": "Rod",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "wire_rigging"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sb_equipment",
+      "vehicleTypes": [
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "Which of these do you have?",
+      "type": "MULTI",
+      "required": false,
+      "options": [
+        {
+          "id": "furler",
+          "label": "Roller-furling headsail",
+          "tags": [
+            "roller_furler"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "liferaft",
+          "label": "Liferaft",
+          "tags": [
+            "liferaft"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "epirb",
+          "label": "EPIRB or PLB",
+          "tags": [
+            "epirb_plb"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "offshore",
+          "label": "Offshore gear (jacklines, harnesses, tethers)",
+          "tags": [
+            "offshore"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "marine_water",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL",
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "Where do you use it?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "fresh",
+          "label": "Fresh water only",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "salt",
+          "label": "Saltwater or brackish water",
+          "tags": [
+            "saltwater_use"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "marine_coastal",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "Do you go out on coastal waters or the Great Lakes?",
+      "help": "Visual distress signals (flares) are required there.",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "tags": [
+            "coastal_waters"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "no",
+          "label": "No, inland only",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "coastal_waters"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marine_storage",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL",
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "How is it kept? (Select all that apply.)",
+      "type": "MULTI",
+      "required": true,
+      "options": [
+        {
+          "id": "in_water",
+          "label": "In the water (slip or mooring)",
+          "tags": [
+            "in_water_storage"
+          ],
+          "maybeTags": [],
+          "vehicleTypes": [
+            "BOAT_POWER",
+            "BOAT_SAIL"
+          ]
+        },
+        {
+          "id": "trailer",
+          "label": "On a trailer",
+          "tags": [
+            "trailered"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "lift",
+          "label": "On a lift or in dry storage",
+          "tags": [],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "trailer_brakes",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL",
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "Does the trailer have brakes?",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "marine_storage",
+        "anyOptionOf": [
+          "trailer"
+        ]
+      },
+      "options": [
+        {
+          "id": "surge",
+          "label": "Surge (hydraulic) brakes",
+          "tags": [
+            "surge_brakes"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "electric",
+          "label": "Electric brakes",
+          "tags": [
+            "electric_brakes"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "none",
+          "label": "No brakes",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "surge_brakes",
+            "electric_brakes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trailer_hubs",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL",
+        "PWC"
+      ],
+      "phase": 2,
+      "prompt": "What kind of trailer hubs?",
+      "help": "Used for the repack-after-immersion reminder (phase 2).",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "marine_storage",
+        "anyOptionOf": [
+          "trailer"
+        ]
+      },
+      "options": [
+        {
+          "id": "ez_lube",
+          "label": "E-Z Lube (grease fitting on the axle end)",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "protectors",
+          "label": "Bearing protectors (Bearing Buddy style)",
+          "tags": [
+            "bearing_protectors"
+          ],
+          "maybeTags": [
+            "non_ez_lube_axle"
+          ]
+        },
+        {
+          "id": "standard",
+          "label": "Standard hubs, no grease fittings",
+          "tags": [
+            "non_ez_lube_axle"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "non_ez_lube_axle",
+            "bearing_protectors"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marine_onboard",
+      "vehicleTypes": [
+        "BOAT_POWER",
+        "BOAT_SAIL"
+      ],
+      "phase": 1,
+      "prompt": "Which of these are aboard?",
+      "type": "MULTI",
+      "required": false,
+      "options": [
+        {
+          "id": "head",
+          "label": "Marine toilet (head)",
+          "tags": [
+            "with_head"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "freshwater",
+          "label": "Freshwater tank and pump",
+          "tags": [
+            "with_freshwater_system"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "rechargeable_fe",
+          "label": "Rechargeable fire extinguisher",
+          "tags": [
+            "rechargeable_extinguisher"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "inflatable_pfds",
+          "label": "Inflatable life jackets",
+          "tags": [
+            "inflatable_pfds"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "mc_brand",
+      "vehicleTypes": [
+        "MOTORCYCLE"
+      ],
+      "phase": 1,
+      "prompt": "Is it a Harley-Davidson?",
+      "help": "Harleys use hydraulic lifters and a three-fluid service, so their schedule differs.",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "harley",
+          "label": "Yes, Harley-Davidson",
+          "tags": [
+            "harley_davidson"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "other",
+          "label": "No, another brand",
+          "tags": [
+            "adjustable_valves"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "mc_drive",
+      "vehicleTypes": [
+        "MOTORCYCLE"
+      ],
+      "phase": 1,
+      "prompt": "What's the final drive?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "chain",
+          "label": "Chain",
+          "tags": [
+            "chain_drive"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "belt",
+          "label": "Belt",
+          "tags": [
+            "belt_drive"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "shaft",
+          "label": "Shaft",
+          "tags": [
+            "shaft_drive"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "mc_cooling",
+      "vehicleTypes": [
+        "MOTORCYCLE"
+      ],
+      "phase": 1,
+      "prompt": "Is the engine liquid-cooled?",
+      "help": "Liquid-cooled bikes have a radiator.",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "liquid",
+          "label": "Yes, it has a radiator",
+          "tags": [
+            "liquid_cooled"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "air",
+          "label": "No, air/oil-cooled",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "liquid_cooled"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mc_clutch",
+      "vehicleTypes": [
+        "MOTORCYCLE"
+      ],
+      "phase": 1,
+      "prompt": "What kind of clutch?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "hydraulic",
+          "label": "Hydraulic (fluid reservoir on the lever)",
+          "tags": [
+            "hydraulic_clutch"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "cable",
+          "label": "Cable",
+          "tags": [
+            "cable_clutch"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "hydraulic_clutch",
+            "cable_clutch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mc_fuel",
+      "vehicleTypes": [
+        "MOTORCYCLE"
+      ],
+      "phase": 1,
+      "prompt": "Is it fuel-injected?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "efi",
+          "label": "Fuel-injected",
+          "tags": [
+            "efi"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "carb",
+          "label": "Carbureted",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "efi"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "atv_kind",
+      "vehicleTypes": [
+        "ATV_UTV"
+      ],
+      "phase": 1,
+      "prompt": "ATV or side-by-side?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "atv",
+          "label": "ATV (quad)",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "utv",
+          "label": "UTV / side-by-side",
+          "tags": [
+            "utv"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "atv_transmission",
+      "vehicleTypes": [
+        "ATV_UTV"
+      ],
+      "phase": 1,
+      "prompt": "What kind of transmission?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "cvt",
+          "label": "CVT with a drive belt (most models)",
+          "tags": [
+            "cvt"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "gear",
+          "label": "Manual or gear-driven",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "cvt"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "atv_cooling",
+      "vehicleTypes": [
+        "ATV_UTV"
+      ],
+      "phase": 1,
+      "prompt": "Is the engine liquid-cooled?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "liquid",
+          "label": "Yes, it has a radiator",
+          "tags": [
+            "liquid_cooled"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "air",
+          "label": "No, air/oil-cooled",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "liquid_cooled"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "atv_equipment",
+      "vehicleTypes": [
+        "ATV_UTV"
+      ],
+      "phase": 2,
+      "prompt": "Which of these does it have?",
+      "type": "MULTI",
+      "required": false,
+      "options": [
+        {
+          "id": "winch",
+          "label": "Winch",
+          "tags": [
+            "winch"
+          ],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "pwc_brand",
+      "vehicleTypes": [
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "Which brand?",
+      "type": "SINGLE",
+      "required": true,
+      "options": [
+        {
+          "id": "sea_doo",
+          "label": "Sea-Doo",
+          "tags": [
+            "sea_doo"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "yamaha",
+          "label": "Yamaha WaveRunner",
+          "tags": [
+            "yamaha"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "kawasaki",
+          "label": "Kawasaki Jet Ski",
+          "tags": [
+            "kawasaki"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "other",
+          "label": "Other",
+          "tags": [],
+          "maybeTags": []
+        }
+      ]
+    },
+    {
+      "id": "pwc_engine",
+      "vehicleTypes": [
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "Which engine?",
+      "type": "SINGLE",
+      "required": false,
+      "options": [
+        {
+          "id": "four_stroke",
+          "label": "4-stroke, not supercharged",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "sd_1630",
+          "label": "Supercharged Sea-Doo 1630 ACE (230/300 hp)",
+          "tags": [
+            "sea_doo_1630_sc"
+          ],
+          "maybeTags": [],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "sea_doo"
+            ]
+          }
+        },
+        {
+          "id": "sd_1503",
+          "label": "Supercharged Sea-Doo 1503 4-TEC (2003-2015)",
+          "tags": [
+            "sea_doo_1503_sc"
+          ],
+          "maybeTags": [],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "sea_doo"
+            ]
+          }
+        },
+        {
+          "id": "kaw_sc",
+          "label": "Supercharged Kawasaki",
+          "tags": [
+            "kawasaki_sc"
+          ],
+          "maybeTags": [],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "kawasaki"
+            ]
+          }
+        },
+        {
+          "id": "yam_svho",
+          "label": "Yamaha SVHO (supercharged)",
+          "tags": [
+            "yamaha_svho"
+          ],
+          "maybeTags": [],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "yamaha"
+            ]
+          }
+        },
+        {
+          "id": "two_stroke",
+          "label": "Older 2-stroke",
+          "tags": [
+            "two_stroke"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure_sea_doo",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "sea_doo_1630_sc",
+            "sea_doo_1503_sc"
+          ],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "sea_doo"
+            ]
+          }
+        },
+        {
+          "id": "not_sure_kawasaki",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "kawasaki_sc"
+          ],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "kawasaki"
+            ]
+          }
+        },
+        {
+          "id": "not_sure_yamaha",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "yamaha_svho"
+          ],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "yamaha"
+            ]
+          }
+        },
+        {
+          "id": "not_sure_other",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "two_stroke"
+          ],
+          "showIf": {
+            "questionId": "pwc_brand",
+            "anyOptionOf": [
+              "other"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pwc_ibr",
+      "vehicleTypes": [
+        "PWC"
+      ],
+      "phase": 1,
+      "prompt": "Does it have iBR (brake and reverse)?",
+      "type": "SINGLE",
+      "required": false,
+      "showIf": {
+        "questionId": "pwc_brand",
+        "anyOptionOf": [
+          "sea_doo"
+        ]
+      },
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "tags": [
+            "ibr"
+          ],
+          "maybeTags": []
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "tags": [],
+          "maybeTags": []
+        },
+        {
+          "id": "not_sure",
+          "label": "Not sure",
+          "tags": [],
+          "maybeTags": [
+            "ibr"
+          ]
+        }
+      ]
+    }
+  ]
+}

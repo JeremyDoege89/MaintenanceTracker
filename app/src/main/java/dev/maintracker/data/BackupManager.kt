@@ -96,6 +96,8 @@ class BackupManager(
         val staging = File(context.cacheDir, "import").apply { deleteRecursively(); mkdirs() }
         try {
             val b = read(source, staging)
+            // Library templates must be in place first, or restored tasks would lose their templateId.
+            repository.syncLibrary()
             val templateIds = db.templates().ids().toSet()
             val stagedFile = { rel: String -> File(staging, rel).takeIf { it.isFile } }
             // Files already on this phone count too (re-importing a rows-only export on the same phone).

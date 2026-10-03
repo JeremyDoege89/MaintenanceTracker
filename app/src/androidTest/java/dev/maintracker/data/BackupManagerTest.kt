@@ -54,7 +54,7 @@ class BackupManagerTest {
         }
         db = Room.inMemoryDatabaseBuilder(real, AppDatabase::class.java).build()
         photos = PhotoStore(ctx)
-        repo = VehicleRepository(db, photos, clock = { now })
+        repo = VehicleRepository(db, photos, testLibrarySync(db, real), clock = { now })
         backups = BackupManager(ctx, db, photos, repo, clearReminders = {})
     }
 
@@ -66,7 +66,6 @@ class BackupManagerTest {
     private fun tmp(name: String, content: ByteArray? = null) = File(root, name).also { f -> content?.let(f::writeBytes) }
 
     private suspend fun seed(): Triple<String, String, String> {
-        repo.ensureSeedTemplates()
         val photo = "photos/hero.jpg"
         File(ctx.filesDir, "photos").mkdirs(); File(ctx.filesDir, photo).writeBytes(byteArrayOf(1, 2, 3))
         val v = repo.createVehicle(

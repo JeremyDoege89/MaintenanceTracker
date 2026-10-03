@@ -1,14 +1,16 @@
 package dev.maintracker.domain
 
 import dev.maintracker.data.model.MaintenanceTask
+import dev.maintracker.data.model.TemplateKind
 import java.time.ZoneId
 import kotlin.math.abs
 
 /** Human due lines for cards and rows. */
 object DueText {
 
-    /** "Due 2026-09-14 / 51,220 mi". Null for checklist tasks. */
+    /** "Due 2026-09-14 / 51,220 mi". Null for checklist tasks and finished one-time tasks. */
     fun dueLine(t: MaintenanceTask, zone: ZoneId = ZoneId.systemDefault()): String? {
+        if (t.isFinishedOneTime) return null
         val parts = listOfNotNull(
             t.dueDate?.let { Format.date(it, zone) },
             if (t.dueMeter != null && t.meterUnit != null) Format.meter(t.dueMeter, t.meterUnit) else null,
@@ -39,3 +41,7 @@ object DueText {
 
     private fun plural(n: Long, word: String) = if (n == 1L) word else "${word}s"
 }
+
+/** A break-in / first service that has been logged: retired, nothing more comes due (§5 step 8). */
+val MaintenanceTask.isFinishedOneTime: Boolean
+    get() = kind == TemplateKind.ONE_TIME && !isActive && completedCount > 0

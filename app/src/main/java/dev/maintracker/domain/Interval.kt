@@ -13,10 +13,18 @@ enum class IntervalUnit(val label: String) {
     }
 
     companion object {
-        /** Largest unit that round-trips exactly. */
+        private const val JULIAN_YEAR = 365.25
+
+        /**
+         * Largest unit that round-trips exactly; failing that, the library's 365.25-day years and
+         * months, rounded down (1826 → 5 years, 1278 → 42 months), which [toDays] may land a day off — the
+         * editor keeps the stored days when the shown value is left unchanged.
+         */
         fun split(days: Int): Pair<Int, IntervalUnit> {
             if (days > 0 && days % 365 == 0) return days / 365 to YEARS
             (1..240).firstOrNull { MONTHS.toDays(it) == days }?.let { return it to MONTHS }
+            (1..100).firstOrNull { (it * JULIAN_YEAR).toInt() == days }?.let { return it to YEARS }
+            (1..240).firstOrNull { (it * JULIAN_YEAR / 12).toInt() == days }?.let { return it to MONTHS }
             if (days > 0 && days % 7 == 0) return days / 7 to WEEKS
             return days to DAYS
         }

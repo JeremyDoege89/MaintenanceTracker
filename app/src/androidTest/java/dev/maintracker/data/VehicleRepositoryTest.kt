@@ -10,6 +10,7 @@ import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.data.model.TaskStatus
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VehicleType
+import dev.maintracker.domain.library.isOfferable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -31,7 +32,7 @@ class VehicleRepositoryTest {
     @Before fun setUp() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
         db = Room.inMemoryDatabaseBuilder(ctx, AppDatabase::class.java).build()
-        repo = VehicleRepository(db, PhotoStore(ctx), clock = { now })
+        repo = VehicleRepository(db, PhotoStore(ctx), testLibrarySync(db), clock = { now })
     }
 
     @After fun tearDown() = db.close()
@@ -44,7 +45,8 @@ class VehicleRepositoryTest {
 
     @Test fun createEachType_fieldsAndSeededTasksPersist() = runTest {
         for (type in VehicleType.entries) {
-            val templates = repo.templatesFor(type)
+            // What Setup could offer this unit: no break-in task on a 61k-mile rig.
+            val templates = repo.templatesFor(type).filter { it.isOfferable(draft(type)) }
             assertTrue("$type has templates", templates.isNotEmpty())
             val skipped = templates.first().id
             val v = repo.createVehicle(draft(type), templates.map { it.id }.toSet() - skipped)
@@ -63,8 +65,10 @@ class VehicleRepositoryTest {
 
     @Test fun meterUpdate_startsIdleMeterClock_andArchiveHidesVehicle() = runTest {
         val type = VehicleType.ATV_UTV
-        val v = repo.createVehicle(draft(type).copy(currentMiles = null, currentEngineHours = null),
-            repo.templatesFor(type).map { it.id }.toSet())
+        val unit = draft(type).copy(currentMiles = null, currentEngineHours = null)
+        // Unknown meters: Setup offers no break-in (ONE_TIME, measured from 0) tasks.
+        val v = repo.createVehicle(unit,
+            repo.templatesFor(type).filter { it.isOfferable(unit) }.map { it.id }.toSet())
         assertTrue(db.tasks().forVehicle(v.id).filter { it.meterInterval != null }.all { it.dueMeter == null })
 
         repo.updateMeters(v.id, null, 50.0, null)

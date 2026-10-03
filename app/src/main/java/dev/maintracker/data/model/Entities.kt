@@ -2,6 +2,7 @@ package dev.maintracker.data.model
 
 import kotlinx.serialization.Serializable
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
@@ -41,7 +42,13 @@ data class Vehicle(
     val metersUpdatedAt: Long? = null,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Schema v3. Confirmed Setup tags, ';'-separated (see SetupEvaluator). */
+    @ColumnInfo(defaultValue = "") val configTags: String = "",
+    /** Schema v3. Setup answers as JSON {"questionId":["optionId",...]}; null = Setup never run. */
+    val setupAnswers: String? = null,
 ) {
+    val configTagSet: Set<String> get() = configTags.split(';').filter { it.isNotBlank() }.toSet()
+
     fun meter(unit: MeterUnit): Double? = when (unit) {
         MeterUnit.MILES -> currentMiles
         MeterUnit.ENGINE_HOURS -> currentEngineHours
@@ -63,7 +70,29 @@ data class MaintenanceTemplate(
     val notes: String? = null,
     val isSeeded: Boolean,
     val sortOrder: Int,
-)
+    // Schema v3: maintenance library fields (docs/maintenance-library/IMPLEMENTATION.md §4.1).
+    /** ';'-separated Setup tags; "all" = every unit of the type. */
+    @ColumnInfo(defaultValue = "all") val appliesTo: String = "all",
+    @ColumnInfo(defaultValue = "RECURRING") val kind: TemplateKind = TemplateKind.RECURRING,
+    @ColumnInfo(defaultValue = "1") val phase: Int = 1,
+    @ColumnInfo(defaultValue = "0") val safetyCritical: Boolean = false,
+    val dateBasis: DateBasis? = null,
+    val season: Season? = null,
+    val eventTrigger: String? = null,
+    /** Second limit, kept for phase 2 ("whichever first" across two meters). */
+    val altMeterInterval: Int? = null,
+    val altMeterUnit: MeterUnit? = null,
+    val typicalRange: String? = null,
+    val severeService: String? = null,
+    val diyPro: String? = null,
+    val source: String? = null,
+    val sourceTier: String? = null,
+    val libraryGroup: String? = null,
+    /** Dropped from the shipped library; kept so existing tasks' templateId stays valid. */
+    @ColumnInfo(defaultValue = "0") val retired: Boolean = false,
+) {
+    val appliesToTags: Set<String> get() = appliesTo.split(';').filter { it.isNotBlank() }.toSet()
+}
 
 @Entity(
     tableName = "maintenance_task",
@@ -105,6 +134,9 @@ data class MaintenanceTask(
     val sortOrder: Int = 0,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Schema v3. Copied from the template; custom tasks are RECURRING. */
+    @ColumnInfo(defaultValue = "RECURRING") val kind: TemplateKind = TemplateKind.RECURRING,
+    @ColumnInfo(defaultValue = "0") val safetyCritical: Boolean = false,
 )
 
 @Entity(

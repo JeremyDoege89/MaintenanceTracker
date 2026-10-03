@@ -42,6 +42,7 @@ class SettingsStore(private val context: Context) {
         val distance = stringPreferencesKey("distance_unit")
         val dateStyle = stringPreferencesKey("date_style")
         val currency = stringPreferencesKey("currency")
+        val libraryDataVersion = intPreferencesKey("library_data_version")
     }
 
     val flow: Flow<AppSettings> = context.dataStore.data.map { it.toSettings() }
@@ -84,6 +85,10 @@ class SettingsStore(private val context: Context) {
         it[K.dateStyle] = d.dateStyle.name
         if (d.currency == null) it.remove(K.currency) else it[K.currency] = d.currency
     }
+
+    /** dataVersion of the maintenance library last applied to the database (0 = never). */
+    suspend fun libraryDataVersion(): Int = context.dataStore.data.first()[K.libraryDataVersion] ?: 0
+    suspend fun setLibraryDataVersion(v: Int) = context.dataStore.edit { it[K.libraryDataVersion] = v }
 
     suspend fun setExactAlarmExplainerShown() = context.dataStore.edit { it[K.exactExplainer] = true }
 }

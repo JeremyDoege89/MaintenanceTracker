@@ -22,6 +22,25 @@ class IntervalTest {
         }
     }
 
+    @Test fun libraryJulianYearsReadAsYears() {
+        // maintenance_library_v1.json writes multi-year intervals as 365.25-day years.
+        assertEquals(4 to IntervalUnit.YEARS, IntervalUnit.split(1461))
+        assertEquals(5 to IntervalUnit.YEARS, IntervalUnit.split(1826))
+        assertEquals(6 to IntervalUnit.YEARS, IntervalUnit.split(2191))
+        assertEquals(7 to IntervalUnit.YEARS, IntervalUnit.split(2556))
+        assertEquals(10 to IntervalUnit.YEARS, IntervalUnit.split(3652))
+        assertEquals(12 to IntervalUnit.YEARS, IntervalUnit.split(4383))
+        assertEquals(42 to IntervalUnit.MONTHS, IntervalUnit.split(1278))
+        assertEquals("5 years", Format.days(1826))
+    }
+
+    @Test fun oneTimeReadsOnce() {
+        val mi = dev.maintracker.data.model.MeterUnit.MILES
+        assertEquals("Once at 1,000 mi", Format.interval(null, 1000, mi, oneTime = true))
+        assertEquals("Once at 6 months or 1,000 mi — whichever first", Format.interval(182, 1000, mi, oneTime = true))
+        assertEquals("Every 1,000 mi", Format.interval(null, 1000, mi))
+    }
+
     @Test fun formatReadsNaturally() {
         assertEquals("month", Format.days(30))
         assertEquals("6 months", Format.days(182))

@@ -1,0 +1,753 @@
+{
+  "schemaVersion": 1,
+  "libraryDataVersion": 1,
+  "questionsDataVersion": 1,
+  "note": "Phase-1 matching only. The ONE_TIME availability rule (current meter below the interval) is applied after matching and is not reflected here.",
+  "scenarios": [
+    {
+      "name": "Class A gas motorhome, everything known",
+      "vehicleType": "MOTORHOME",
+      "answers": {
+        "mh_chassis": [
+          "ford_f53"
+        ],
+        "rv_generator": [
+          "gas"
+        ],
+        "rv_slides": [
+          "rack"
+        ],
+        "rv_water_heater": [
+          "suburban"
+        ],
+        "rv_fridge": [
+          "absorption"
+        ],
+        "rv_propane": [
+          "built_in"
+        ],
+        "rv_batteries": [
+          "flooded"
+        ],
+        "rv_equipment": [
+          "awning",
+          "leveling"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "absorption_fridge",
+        "awning",
+        "ford_f53",
+        "gas_generator",
+        "lead_acid_battery",
+        "leveling_jacks",
+        "slide_outs",
+        "slide_outs_rack_pinion",
+        "suburban_water_heater"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:MOTORHOME:absorption-refrigerator-burner-flue-rear-vent-leveling",
+        "std:MOTORHOME:accessory-belt-and-hoses-inspection",
+        "std:MOTORHOME:accessory-belt-replacement",
+        "std:MOTORHOME:automatic-transmission-fluid-ford-torqshift",
+        "std:MOTORHOME:awning-clean-inspect-and-lubricate",
+        "std:MOTORHOME:brake-fluid-replacement",
+        "std:MOTORHOME:brake-inspection-pads-rotors-hydraulics",
+        "std:MOTORHOME:chassis-lube-steering-linkage-ball-joints-driveshaft-u-joints",
+        "std:MOTORHOME:converter-inverter-transfer-switch-and-shore-cord",
+        "std:MOTORHOME:coolant-condition-test",
+        "std:MOTORHOME:coolant-replacement-ford-motorcraft",
+        "std:MOTORHOME:de-winterization-spring-commissioning",
+        "std:MOTORHOME:engine-air-filter-inspection",
+        "std:MOTORHOME:engine-air-filter-replacement",
+        "std:MOTORHOME:engine-oil-and-filter-ford-gas-v8-v10",
+        "std:MOTORHOME:entry-steps-hinges-locks-and-compartment-latches",
+        "std:MOTORHOME:exterior-wash",
+        "std:MOTORHOME:exterior-wax-fiberglass-sidewalls",
+        "std:MOTORHOME:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:MOTORHOME:fire-extinguisher-replacement-disposable",
+        "std:MOTORHOME:fresh-water-system-sanitize",
+        "std:MOTORHOME:furnace-service-burner-blower-sail-switch-exhaust-vent-nests",
+        "std:MOTORHOME:generator-air-filter-gasoline",
+        "std:MOTORHOME:generator-break-in-oil-change-gasoline",
+        "std:MOTORHOME:generator-dealer-tune-up-gasoline",
+        "std:MOTORHOME:generator-exercise-under-load",
+        "std:MOTORHOME:generator-fuel-filter-gasoline",
+        "std:MOTORHOME:generator-oil-and-filter-gasoline-e-g-onan-qg",
+        "std:MOTORHOME:generator-spark-arrester-gasoline",
+        "std:MOTORHOME:house-battery-replacement-lead-acid",
+        "std:MOTORHOME:house-battery-terminals-and-connections",
+        "std:MOTORHOME:house-battery-water-level-flooded-lead-acid",
+        "std:MOTORHOME:lp-co-detector-replacement",
+        "std:MOTORHOME:lp-co-detector-test",
+        "std:MOTORHOME:lp-regulator-pigtails-and-hoses-inspection",
+        "std:MOTORHOME:lp-regulator-replacement",
+        "std:MOTORHOME:lp-system-leak-pressure-test-timed-manometer",
+        "std:MOTORHOME:power-steering-fluid-check",
+        "std:MOTORHOME:powered-leveling-jacks-inspect-and-lubricate",
+        "std:MOTORHOME:rear-axle-lube-check",
+        "std:MOTORHOME:rear-axle-lube-replacement",
+        "std:MOTORHOME:roof-a-c-coils-shroud-and-drain",
+        "std:MOTORHOME:roof-a-c-return-air-filters",
+        "std:MOTORHOME:roof-cleaning-and-uv-treatment",
+        "std:MOTORHOME:roof-membrane-and-sealant-inspection-seams-vents-a-c-skylights",
+        "std:MOTORHOME:roof-membrane-replacement-full-reseal",
+        "std:MOTORHOME:slide-out-mechanism-lubrication-rack-and-pinion-through-frame",
+        "std:MOTORHOME:slide-out-seals-clean-and-inspect",
+        "std:MOTORHOME:smoke-alarm-battery",
+        "std:MOTORHOME:smoke-alarm-replacement",
+        "std:MOTORHOME:smoke-alarm-test",
+        "std:MOTORHOME:spark-plugs-ford-v10-7-3l",
+        "std:MOTORHOME:tank-valve-lubrication-and-sensor-cleaning",
+        "std:MOTORHOME:tire-age-replacement",
+        "std:MOTORHOME:tire-inspection-tread-sidewalls-valve-stems",
+        "std:MOTORHOME:underbelly-frame-and-weatherstripping",
+        "std:MOTORHOME:water-filters-inline-canister",
+        "std:MOTORHOME:water-heater-anode-rod-suburban-steel-tank",
+        "std:MOTORHOME:water-heater-flush-tank-type",
+        "std:MOTORHOME:water-heater-t-and-p-valve-burner-igniter-and-flue",
+        "std:MOTORHOME:wheel-alignment",
+        "std:MOTORHOME:window-door-and-compartment-seals",
+        "std:MOTORHOME:winterization",
+        "std:MOTORHOME:wiper-blades"
+      ],
+      "expectedMightApplyIds": []
+    },
+    {
+      "name": "Diesel pusher with several 'not sure' answers",
+      "vehicleType": "MOTORHOME",
+      "answers": {
+        "mh_chassis": [
+          "diesel_pusher"
+        ],
+        "mh_allison": [
+          "not_sure"
+        ],
+        "rv_generator": [
+          "diesel"
+        ],
+        "rv_slides": [
+          "unknown_type"
+        ],
+        "rv_water_heater": [
+          "not_sure"
+        ],
+        "rv_fridge": [
+          "residential"
+        ],
+        "rv_batteries": [
+          "lithium"
+        ],
+        "rv_equipment": [
+          "leveling"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "diesel_generator",
+        "diesel_pusher",
+        "leveling_jacks",
+        "lithium_battery",
+        "slide_outs"
+      ],
+      "expectedMaybeTags": [
+        "allison_non_tes295",
+        "allison_tes295",
+        "aluminum_tank_water_heater",
+        "dot_lp_cylinders",
+        "slide_outs_hydraulic",
+        "slide_outs_rack_pinion",
+        "suburban_water_heater",
+        "tankless_water_heater"
+      ],
+      "expectedRecommendedIds": [
+        "std:MOTORHOME:accessory-belt-and-hoses-inspection",
+        "std:MOTORHOME:air-brake-adjustment-slack-adjusters-and-chambers",
+        "std:MOTORHOME:air-dryer-cartridge-replacement",
+        "std:MOTORHOME:air-tank-moisture-drain-check",
+        "std:MOTORHOME:allison-main-filter-initial-change",
+        "std:MOTORHOME:charge-air-cooler-and-radiator-fins",
+        "std:MOTORHOME:chassis-lube-kingpins-tie-rods-driveline-slack-adjusters",
+        "std:MOTORHOME:converter-inverter-transfer-switch-and-shore-cord",
+        "std:MOTORHOME:coolant-condition-test",
+        "std:MOTORHOME:coolant-replacement-elc-oat-diesel",
+        "std:MOTORHOME:de-winterization-spring-commissioning",
+        "std:MOTORHOME:engine-air-filter-restriction-check-diesel",
+        "std:MOTORHOME:engine-oil-and-filter-cummins-diesel",
+        "std:MOTORHOME:entry-steps-hinges-locks-and-compartment-latches",
+        "std:MOTORHOME:exterior-wash",
+        "std:MOTORHOME:exterior-wax-fiberglass-sidewalls",
+        "std:MOTORHOME:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:MOTORHOME:fire-extinguisher-replacement-disposable",
+        "std:MOTORHOME:fresh-water-system-sanitize",
+        "std:MOTORHOME:fuel-filters-primary-water-separator-plus-secondary",
+        "std:MOTORHOME:furnace-service-burner-blower-sail-switch-exhaust-vent-nests",
+        "std:MOTORHOME:generator-air-filter-diesel",
+        "std:MOTORHOME:generator-break-in-oil-change-diesel",
+        "std:MOTORHOME:generator-coolant-flush-diesel",
+        "std:MOTORHOME:generator-exercise-under-load",
+        "std:MOTORHOME:generator-fuel-filter-diesel",
+        "std:MOTORHOME:generator-oil-and-filter-diesel-e-g-onan-qd",
+        "std:MOTORHOME:house-battery-terminals-and-connections",
+        "std:MOTORHOME:lp-co-detector-replacement",
+        "std:MOTORHOME:lp-co-detector-test",
+        "std:MOTORHOME:lp-regulator-pigtails-and-hoses-inspection",
+        "std:MOTORHOME:lp-regulator-replacement",
+        "std:MOTORHOME:lp-system-leak-pressure-test-timed-manometer",
+        "std:MOTORHOME:powered-leveling-jacks-inspect-and-lubricate",
+        "std:MOTORHOME:roof-a-c-coils-shroud-and-drain",
+        "std:MOTORHOME:roof-a-c-return-air-filters",
+        "std:MOTORHOME:roof-cleaning-and-uv-treatment",
+        "std:MOTORHOME:roof-membrane-and-sealant-inspection-seams-vents-a-c-skylights",
+        "std:MOTORHOME:roof-membrane-replacement-full-reseal",
+        "std:MOTORHOME:slide-out-seals-clean-and-inspect",
+        "std:MOTORHOME:smoke-alarm-battery",
+        "std:MOTORHOME:smoke-alarm-replacement",
+        "std:MOTORHOME:smoke-alarm-test",
+        "std:MOTORHOME:tank-valve-lubrication-and-sensor-cleaning",
+        "std:MOTORHOME:tire-age-replacement",
+        "std:MOTORHOME:tire-inspection-tread-sidewalls-valve-stems",
+        "std:MOTORHOME:underbelly-frame-and-weatherstripping",
+        "std:MOTORHOME:water-filters-inline-canister",
+        "std:MOTORHOME:wheel-alignment",
+        "std:MOTORHOME:window-door-and-compartment-seals",
+        "std:MOTORHOME:winterization",
+        "std:MOTORHOME:wiper-blades"
+      ],
+      "expectedMightApplyIds": [
+        "std:MOTORHOME:allison-filters-main-spin-on-plus-lube",
+        "std:MOTORHOME:allison-transmission-fluid-non-tes-295-dexron-tes-389",
+        "std:MOTORHOME:allison-transmission-fluid-tes-295-synthetic-e-g-transynd",
+        "std:MOTORHOME:dot-lp-cylinder-requalification",
+        "std:MOTORHOME:hydraulic-slide-out-fluid-check",
+        "std:MOTORHOME:slide-out-mechanism-lubrication-rack-and-pinion-through-frame",
+        "std:MOTORHOME:tankless-water-heater-descale",
+        "std:MOTORHOME:water-heater-anode-rod-suburban-steel-tank",
+        "std:MOTORHOME:water-heater-drain-plug-dometic-atwood-aluminum-tank",
+        "std:MOTORHOME:water-heater-flush-tank-type",
+        "std:MOTORHOME:water-heater-t-and-p-valve-burner-igniter-and-flue"
+      ]
+    },
+    {
+      "name": "Fifth wheel",
+      "vehicleType": "TRAVEL_TRAILER",
+      "answers": {
+        "tt_hitch": [
+          "fifth_wheel"
+        ],
+        "tt_brakes": [
+          "electric"
+        ],
+        "tt_suspension": [
+          "leaf"
+        ],
+        "rv_generator": [
+          "none"
+        ],
+        "rv_slides": [
+          "hydraulic"
+        ],
+        "rv_water_heater": [
+          "atwood"
+        ],
+        "rv_fridge": [
+          "absorption"
+        ],
+        "rv_propane": [
+          "cylinders"
+        ],
+        "rv_batteries": [
+          "agm"
+        ],
+        "rv_equipment": [
+          "awning"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "absorption_fridge",
+        "aluminum_tank_water_heater",
+        "awning",
+        "dot_lp_cylinders",
+        "electric_brakes",
+        "fifth_wheel",
+        "leaf_spring",
+        "slide_outs",
+        "slide_outs_hydraulic"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:TRAVEL_TRAILER:absorption-refrigerator-burner-flue-rear-vent-leveling",
+        "std:TRAVEL_TRAILER:awning-clean-inspect-and-lubricate",
+        "std:TRAVEL_TRAILER:breakaway-battery-charge-check",
+        "std:TRAVEL_TRAILER:converter-inverter-transfer-switch-and-shore-cord",
+        "std:TRAVEL_TRAILER:de-winterization-spring-commissioning",
+        "std:TRAVEL_TRAILER:dot-lp-cylinder-requalification",
+        "std:TRAVEL_TRAILER:electric-brake-shoe-adjustment",
+        "std:TRAVEL_TRAILER:electric-brake-shoe-adjustment-new-axle-200-mi",
+        "std:TRAVEL_TRAILER:electric-brake-shoe-adjustment-new-axle-3-000-mi",
+        "std:TRAVEL_TRAILER:electric-brakes-magnets-shoes-drums-and-wiring",
+        "std:TRAVEL_TRAILER:entry-steps-hinges-locks-and-compartment-latches",
+        "std:TRAVEL_TRAILER:exterior-wash",
+        "std:TRAVEL_TRAILER:exterior-wax-fiberglass-sidewalls",
+        "std:TRAVEL_TRAILER:fifth-wheel-hitch-plate-lubrication",
+        "std:TRAVEL_TRAILER:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:TRAVEL_TRAILER:fire-extinguisher-replacement-disposable",
+        "std:TRAVEL_TRAILER:frame-hangers-and-welds",
+        "std:TRAVEL_TRAILER:fresh-water-system-sanitize",
+        "std:TRAVEL_TRAILER:furnace-service-burner-blower-sail-switch-exhaust-vent-nests",
+        "std:TRAVEL_TRAILER:house-battery-terminals-and-connections",
+        "std:TRAVEL_TRAILER:hydraulic-slide-out-fluid-check",
+        "std:TRAVEL_TRAILER:landing-gear-tongue-jack-and-manual-stabilizer-jacks",
+        "std:TRAVEL_TRAILER:leaf-spring-suspension-equalizers-shackles-bushings-wet-bolts",
+        "std:TRAVEL_TRAILER:lp-co-detector-replacement",
+        "std:TRAVEL_TRAILER:lp-co-detector-test",
+        "std:TRAVEL_TRAILER:lp-regulator-pigtails-and-hoses-inspection",
+        "std:TRAVEL_TRAILER:lp-regulator-replacement",
+        "std:TRAVEL_TRAILER:lp-system-leak-pressure-test-timed-manometer",
+        "std:TRAVEL_TRAILER:pin-box-welds-and-king-pin-wear-inspection",
+        "std:TRAVEL_TRAILER:roof-a-c-coils-shroud-and-drain",
+        "std:TRAVEL_TRAILER:roof-a-c-return-air-filters",
+        "std:TRAVEL_TRAILER:roof-cleaning-and-uv-treatment",
+        "std:TRAVEL_TRAILER:roof-membrane-and-sealant-inspection-seams-vents-a-c-skylights",
+        "std:TRAVEL_TRAILER:roof-membrane-replacement-full-reseal",
+        "std:TRAVEL_TRAILER:slide-out-seals-clean-and-inspect",
+        "std:TRAVEL_TRAILER:smoke-alarm-battery",
+        "std:TRAVEL_TRAILER:smoke-alarm-replacement",
+        "std:TRAVEL_TRAILER:smoke-alarm-test",
+        "std:TRAVEL_TRAILER:tank-valve-lubrication-and-sensor-cleaning",
+        "std:TRAVEL_TRAILER:tire-age-replacement-st-trailer-tires-incl-spare",
+        "std:TRAVEL_TRAILER:underbelly-frame-and-weatherstripping",
+        "std:TRAVEL_TRAILER:water-filters-inline-canister",
+        "std:TRAVEL_TRAILER:water-heater-drain-plug-dometic-atwood-aluminum-tank",
+        "std:TRAVEL_TRAILER:water-heater-flush-tank-type",
+        "std:TRAVEL_TRAILER:water-heater-t-and-p-valve-burner-igniter-and-flue",
+        "std:TRAVEL_TRAILER:wheel-bearings-clean-inspect-and-repack",
+        "std:TRAVEL_TRAILER:window-door-and-compartment-seals",
+        "std:TRAVEL_TRAILER:winterization"
+      ],
+      "expectedMightApplyIds": []
+    },
+    {
+      "name": "Trailered saltwater outboard boat",
+      "vehicleType": "BOAT_POWER",
+      "answers": {
+        "pb_propulsion": [
+          "outboard_4s"
+        ],
+        "pb_size": [
+          "yes"
+        ],
+        "marine_water": [
+          "salt"
+        ],
+        "marine_coastal": [
+          "yes"
+        ],
+        "marine_storage": [
+          "trailer"
+        ],
+        "trailer_brakes": [
+          "surge"
+        ],
+        "trailer_hubs": [
+          "standard"
+        ],
+        "marine_onboard": []
+      },
+      "expectedConfirmedTags": [
+        "coastal_waters",
+        "outboard_4stroke",
+        "saltwater_launch",
+        "saltwater_use",
+        "surge_brakes",
+        "trailered"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:BOAT_POWER:battery-load-test",
+        "std:BOAT_POWER:battery-replacement",
+        "std:BOAT_POWER:battery-terminals",
+        "std:BOAT_POWER:break-in-service-new-outboard-or-sterndrive",
+        "std:BOAT_POWER:control-and-shift-cables",
+        "std:BOAT_POWER:electronics-vhf-gps-chartplotter-transducer",
+        "std:BOAT_POWER:engine-oil-and-filter-4-stroke-outboard",
+        "std:BOAT_POWER:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:BOAT_POWER:fire-extinguisher-retirement-disposable",
+        "std:BOAT_POWER:fuel-tank-lines-primer-bulb-vent-and-anti-siphon-valve",
+        "std:BOAT_POWER:fuel-water-separating-filter",
+        "std:BOAT_POWER:gearcase-lower-unit-drive-lube",
+        "std:BOAT_POWER:gelcoat-crazing-and-blisters",
+        "std:BOAT_POWER:hoses-and-clamps-fuel-water-exhaust-below-waterline",
+        "std:BOAT_POWER:hull-wax-gelcoat",
+        "std:BOAT_POWER:life-jackets-annual-inspection-fit-fabric-buckles",
+        "std:BOAT_POWER:power-trim-tilt-fluid",
+        "std:BOAT_POWER:propeller-and-prop-shaft-service",
+        "std:BOAT_POWER:pyrotechnic-flares-replacement",
+        "std:BOAT_POWER:raw-water-pump-impeller-inspection-outboard",
+        "std:BOAT_POWER:raw-water-pump-impeller-replacement-outboard",
+        "std:BOAT_POWER:registration-documentation-renewal",
+        "std:BOAT_POWER:rollers-bunks-carpet-and-frame-rust",
+        "std:BOAT_POWER:sacrificial-anodes-inspection",
+        "std:BOAT_POWER:sacrificial-anodes-replacement-saltwater",
+        "std:BOAT_POWER:spark-plugs-inspection",
+        "std:BOAT_POWER:spark-plugs-replacement",
+        "std:BOAT_POWER:spring-commissioning",
+        "std:BOAT_POWER:steering-system-lube-fluid-and-play",
+        "std:BOAT_POWER:surge-brake-fluid-flush",
+        "std:BOAT_POWER:surge-brake-inspection-master-cylinder-fluid-actuator-lockout",
+        "std:BOAT_POWER:thermostats",
+        "std:BOAT_POWER:through-hulls-seacocks-exercise",
+        "std:BOAT_POWER:timing-and-accessory-belts",
+        "std:BOAT_POWER:trailer-tire-age-replacement",
+        "std:BOAT_POWER:trailer-wheel-bearing-repack",
+        "std:BOAT_POWER:upholstery-canvas-bimini-and-covers",
+        "std:BOAT_POWER:valve-clearance",
+        "std:BOAT_POWER:winch-and-coupler-jack-lubrication",
+        "std:BOAT_POWER:winch-strap-replacement",
+        "std:BOAT_POWER:winterization"
+      ],
+      "expectedMightApplyIds": []
+    },
+    {
+      "name": "Sailboat with Volvo saildrive, kept in the water",
+      "vehicleType": "BOAT_SAIL",
+      "answers": {
+        "sb_aux": [
+          "diesel"
+        ],
+        "sb_drive": [
+          "saildrive_volvo"
+        ],
+        "sb_engine_zincs": [
+          "not_sure"
+        ],
+        "sb_rigging": [
+          "wire"
+        ],
+        "sb_equipment": [
+          "furler",
+          "epirb"
+        ],
+        "marine_water": [
+          "salt"
+        ],
+        "marine_coastal": [
+          "yes"
+        ],
+        "marine_storage": [
+          "in_water"
+        ],
+        "marine_onboard": [
+          "head",
+          "freshwater"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "coastal_waters",
+        "epirb_plb",
+        "in_water_storage",
+        "inboard_diesel",
+        "roller_furler",
+        "saildrive_volvo",
+        "saltwater_use",
+        "wire_rigging",
+        "with_freshwater_system",
+        "with_head"
+      ],
+      "expectedMaybeTags": [
+        "engine_zincs"
+      ],
+      "expectedRecommendedIds": [
+        "std:BOAT_SAIL:air-filter-intake-silencer",
+        "std:BOAT_SAIL:alternator-seawater-pump-belt",
+        "std:BOAT_SAIL:battery-load-test",
+        "std:BOAT_SAIL:battery-replacement",
+        "std:BOAT_SAIL:battery-terminals",
+        "std:BOAT_SAIL:blocks-tracks-cars-and-clutches",
+        "std:BOAT_SAIL:bottom-paint-antifouling",
+        "std:BOAT_SAIL:chainplates-inspection",
+        "std:BOAT_SAIL:chainplates-pull-inspect-and-rebed",
+        "std:BOAT_SAIL:closed-loop-coolant",
+        "std:BOAT_SAIL:deck-hardware-leak-check-and-rebedding",
+        "std:BOAT_SAIL:electronics-vhf-gps-chartplotter-transducer",
+        "std:BOAT_SAIL:engine-oil-auxiliary-diesel",
+        "std:BOAT_SAIL:epirb-plb-battery-replacement",
+        "std:BOAT_SAIL:epirb-plb-noaa-registration-renewal",
+        "std:BOAT_SAIL:epirb-plb-self-test",
+        "std:BOAT_SAIL:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:BOAT_SAIL:fire-extinguisher-retirement-disposable",
+        "std:BOAT_SAIL:freshwater-tanks-and-pump-sanitize",
+        "std:BOAT_SAIL:fuel-filters-primary-plus-engine-secondary",
+        "std:BOAT_SAIL:furling-sail-uv-strip-replacement",
+        "std:BOAT_SAIL:gelcoat-crazing-and-blisters",
+        "std:BOAT_SAIL:haul-out-and-bottom-inspection",
+        "std:BOAT_SAIL:heat-exchanger-clean-and-descale",
+        "std:BOAT_SAIL:holding-tank-vent-filter",
+        "std:BOAT_SAIL:hoses-and-clamps-fuel-water-exhaust-below-waterline",
+        "std:BOAT_SAIL:hull-wax-gelcoat",
+        "std:BOAT_SAIL:initial-engine-service-oil-filter-valve-clearance",
+        "std:BOAT_SAIL:injectors",
+        "std:BOAT_SAIL:keel-bolts-and-keel-hull-joint-inspection",
+        "std:BOAT_SAIL:life-jackets-annual-inspection-fit-fabric-buckles",
+        "std:BOAT_SAIL:lifeline-replacement",
+        "std:BOAT_SAIL:lifelines-and-stanchions-inspection",
+        "std:BOAT_SAIL:man-overboard-gear-lifesling-horseshoe-buoy-strobe",
+        "std:BOAT_SAIL:marine-head-rebuild-pump-joker-valve-seals",
+        "std:BOAT_SAIL:mast-boom-spreaders-mast-step-and-partners",
+        "std:BOAT_SAIL:mixing-elbow-inspection",
+        "std:BOAT_SAIL:mixing-elbow-replacement",
+        "std:BOAT_SAIL:oil-filter-auxiliary-diesel",
+        "std:BOAT_SAIL:professional-rig-survey-mast-down",
+        "std:BOAT_SAIL:pyrotechnic-flares-replacement",
+        "std:BOAT_SAIL:raw-water-impeller-inspection",
+        "std:BOAT_SAIL:raw-water-impeller-replacement",
+        "std:BOAT_SAIL:registration-documentation-renewal",
+        "std:BOAT_SAIL:roller-furler-bearings-drum-swivel",
+        "std:BOAT_SAIL:rudder-bearings-stock-steering-cables-quadrant-and-sheaves",
+        "std:BOAT_SAIL:running-rigging-halyards-sheets-control-lines",
+        "std:BOAT_SAIL:sacrificial-anodes-inspection",
+        "std:BOAT_SAIL:sacrificial-anodes-replacement-saltwater",
+        "std:BOAT_SAIL:sail-inspection-stitching-batten-pockets-uv-strip",
+        "std:BOAT_SAIL:sail-uv-covers-and-sacrificial-strip-check",
+        "std:BOAT_SAIL:saildrive-anode",
+        "std:BOAT_SAIL:saildrive-diaphragm-inspection",
+        "std:BOAT_SAIL:saildrive-diaphragm-replacement-volvo-penta",
+        "std:BOAT_SAIL:saildrive-leg-oil",
+        "std:BOAT_SAIL:sanitation-hoses-odor-permeation-check",
+        "std:BOAT_SAIL:seawater-strainer",
+        "std:BOAT_SAIL:spring-commissioning",
+        "std:BOAT_SAIL:standing-rigging-inspection-aloft-swages-terminals-pins",
+        "std:BOAT_SAIL:standing-rigging-replacement-wire",
+        "std:BOAT_SAIL:through-hulls-seacocks-exercise",
+        "std:BOAT_SAIL:transmission-marine-gear-oil",
+        "std:BOAT_SAIL:upholstery-canvas-bimini-and-covers",
+        "std:BOAT_SAIL:valve-clearance",
+        "std:BOAT_SAIL:winch-service-clean-and-lubricate",
+        "std:BOAT_SAIL:winterization-lay-up"
+      ],
+      "expectedMightApplyIds": [
+        "std:BOAT_SAIL:engine-zincs-where-fitted"
+      ]
+    },
+    {
+      "name": "Harley touring bike",
+      "vehicleType": "MOTORCYCLE",
+      "answers": {
+        "mc_brand": [
+          "harley"
+        ],
+        "mc_drive": [
+          "belt"
+        ],
+        "mc_cooling": [
+          "air"
+        ],
+        "mc_clutch": [
+          "hydraulic"
+        ],
+        "mc_fuel": [
+          "efi"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "belt_drive",
+        "efi",
+        "harley_davidson",
+        "hydraulic_clutch"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:MOTORCYCLE:air-filter-inspection-and-cleaning",
+        "std:MOTORCYCLE:air-filter-replacement",
+        "std:MOTORCYCLE:battery-test",
+        "std:MOTORCYCLE:brake-fluid-dot-4",
+        "std:MOTORCYCLE:brake-pads-and-rotors",
+        "std:MOTORCYCLE:break-in-first-service",
+        "std:MOTORCYCLE:drive-belt-inspection",
+        "std:MOTORCYCLE:engine-oil-and-filter",
+        "std:MOTORCYCLE:fastener-torque-check-axles-bar-clamps-switch-housings",
+        "std:MOTORCYCLE:fork-oil",
+        "std:MOTORCYCLE:fuel-filter-efi",
+        "std:MOTORCYCLE:hydraulic-clutch-fluid",
+        "std:MOTORCYCLE:primary-chaincase-lube-h-d-big-twin",
+        "std:MOTORCYCLE:rear-shock",
+        "std:MOTORCYCLE:spark-plugs",
+        "std:MOTORCYCLE:spring-recommissioning",
+        "std:MOTORCYCLE:steering-head-bearings",
+        "std:MOTORCYCLE:swingarm-linkage-bearings",
+        "std:MOTORCYCLE:throttle-and-control-cables-levers-side-stand-pivot",
+        "std:MOTORCYCLE:tire-age-replacement",
+        "std:MOTORCYCLE:transmission-lube-h-d",
+        "std:MOTORCYCLE:wheel-bearings-and-spokes"
+      ],
+      "expectedMightApplyIds": []
+    },
+    {
+      "name": "Chain-drive sport bike, cooling unanswered",
+      "vehicleType": "MOTORCYCLE",
+      "answers": {
+        "mc_brand": [
+          "other"
+        ],
+        "mc_drive": [
+          "chain"
+        ],
+        "mc_clutch": [
+          "cable"
+        ],
+        "mc_fuel": [
+          "efi"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "adjustable_valves",
+        "cable_clutch",
+        "chain_drive",
+        "efi"
+      ],
+      "expectedMaybeTags": [
+        "liquid_cooled"
+      ],
+      "expectedRecommendedIds": [
+        "std:MOTORCYCLE:air-filter-inspection-and-cleaning",
+        "std:MOTORCYCLE:air-filter-replacement",
+        "std:MOTORCYCLE:battery-test",
+        "std:MOTORCYCLE:brake-fluid-dot-4",
+        "std:MOTORCYCLE:brake-pads-and-rotors",
+        "std:MOTORCYCLE:break-in-first-service",
+        "std:MOTORCYCLE:chain-and-sprocket-wear",
+        "std:MOTORCYCLE:chain-clean-and-lube",
+        "std:MOTORCYCLE:chain-slack-and-alignment",
+        "std:MOTORCYCLE:clutch-cable-free-play",
+        "std:MOTORCYCLE:engine-oil-and-filter",
+        "std:MOTORCYCLE:fastener-torque-check-axles-bar-clamps-switch-housings",
+        "std:MOTORCYCLE:fork-oil",
+        "std:MOTORCYCLE:fuel-filter-efi",
+        "std:MOTORCYCLE:rear-shock",
+        "std:MOTORCYCLE:spark-plugs",
+        "std:MOTORCYCLE:spring-recommissioning",
+        "std:MOTORCYCLE:steering-head-bearings",
+        "std:MOTORCYCLE:swingarm-linkage-bearings",
+        "std:MOTORCYCLE:throttle-and-control-cables-levers-side-stand-pivot",
+        "std:MOTORCYCLE:tire-age-replacement",
+        "std:MOTORCYCLE:valve-clearance",
+        "std:MOTORCYCLE:wheel-bearings-and-spokes"
+      ],
+      "expectedMightApplyIds": [
+        "std:MOTORCYCLE:coolant"
+      ]
+    },
+    {
+      "name": "UTV with winch",
+      "vehicleType": "ATV_UTV",
+      "answers": {
+        "atv_kind": [
+          "utv"
+        ],
+        "atv_transmission": [
+          "cvt"
+        ],
+        "atv_cooling": [
+          "liquid"
+        ],
+        "atv_equipment": [
+          "winch"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "cvt",
+        "liquid_cooled",
+        "utv"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:ATV_UTV:air-filter-and-pre-filter",
+        "std:ATV_UTV:ball-joints-and-tie-rod-ends",
+        "std:ATV_UTV:battery",
+        "std:ATV_UTV:brake-fluid",
+        "std:ATV_UTV:brake-pads",
+        "std:ATV_UTV:break-in-service",
+        "std:ATV_UTV:coolant",
+        "std:ATV_UTV:drive-and-driven-clutch-inspection-and-cleaning",
+        "std:ATV_UTV:drive-belt-inspection",
+        "std:ATV_UTV:engine-mounts-and-exhaust",
+        "std:ATV_UTV:engine-oil-and-filter",
+        "std:ATV_UTV:front-differential-gearcase-fluid",
+        "std:ATV_UTV:fuel-filter",
+        "std:ATV_UTV:grease-fittings-a-arm-pivots-trailing-arms-driveshaft-u-joints",
+        "std:ATV_UTV:lug-nut-torque-check",
+        "std:ATV_UTV:radiator-fins",
+        "std:ATV_UTV:rear-differential-transmission-fluid",
+        "std:ATV_UTV:rops-cage-cab-doors-and-nets",
+        "std:ATV_UTV:shocks-seals-and-preload",
+        "std:ATV_UTV:spark-arrestor",
+        "std:ATV_UTV:spark-plug-inspection",
+        "std:ATV_UTV:spark-plug-replacement",
+        "std:ATV_UTV:steering-eps-rack-toe",
+        "std:ATV_UTV:valve-clearance",
+        "std:ATV_UTV:wheel-bearings",
+        "std:ATV_UTV:wiring-and-connectors-dielectric-grease"
+      ],
+      "expectedMightApplyIds": []
+    },
+    {
+      "name": "Supercharged Sea-Doo on a trailer in saltwater",
+      "vehicleType": "PWC",
+      "answers": {
+        "pwc_brand": [
+          "sea_doo"
+        ],
+        "pwc_engine": [
+          "sd_1630"
+        ],
+        "pwc_ibr": [
+          "yes"
+        ],
+        "marine_water": [
+          "salt"
+        ],
+        "marine_storage": [
+          "trailer"
+        ],
+        "trailer_brakes": [
+          "none"
+        ]
+      },
+      "expectedConfirmedTags": [
+        "ibr",
+        "saltwater_launch",
+        "saltwater_use",
+        "sea_doo",
+        "sea_doo_1630_sc",
+        "trailered"
+      ],
+      "expectedMaybeTags": [],
+      "expectedRecommendedIds": [
+        "std:PWC:anodes",
+        "std:PWC:anticorrosion-spray-engine-compartment",
+        "std:PWC:battery",
+        "std:PWC:carbon-ring-and-drive-shaft-boot-sea-doo",
+        "std:PWC:closed-loop-coolant-sea-doo",
+        "std:PWC:engine-oil-and-filter-sea-doo",
+        "std:PWC:fire-extinguisher-check-gauge-pin-nozzle",
+        "std:PWC:fire-extinguisher-retirement-disposable",
+        "std:PWC:first-service-sea-doo",
+        "std:PWC:ibr-brake-reverse-gate-sea-doo",
+        "std:PWC:impeller-and-wear-ring-inspection",
+        "std:PWC:life-jackets-annual-inspection-fit-fabric-buckles",
+        "std:PWC:registration-documentation-renewal",
+        "std:PWC:rollers-bunks-carpet-and-frame-rust",
+        "std:PWC:spark-plugs",
+        "std:PWC:spring-commissioning",
+        "std:PWC:steering-and-reverse-cables-nozzle",
+        "std:PWC:supercharger-inspection-sea-doo-1630-ace",
+        "std:PWC:trailer-tire-age-replacement",
+        "std:PWC:trailer-wheel-bearing-repack",
+        "std:PWC:winch-and-coupler-jack-lubrication",
+        "std:PWC:winch-strap-replacement",
+        "std:PWC:winterization"
+      ],
+      "expectedMightApplyIds": []
+    }
+  ]
+}

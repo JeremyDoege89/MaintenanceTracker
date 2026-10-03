@@ -129,7 +129,10 @@ class TaskEditViewModel(
         if (errors.isNotEmpty()) { _state.update { it.copy(errors = errors) }; return }
         _state.update { it.copy(saving = true) }
         val f = s.form
-        val days = f.every.trim().toIntOrNull()?.let(f.everyUnit::toDays)
+        val n = f.every.trim().toIntOrNull()
+        // Unchanged interval keeps its stored days (library 5 years = 1826, which toDays would make 1825).
+        val days = s.existing?.timeIntervalDays?.takeIf { IntervalUnit.split(it) == (n to f.everyUnit) }
+            ?: n?.let(f.everyUnit::toDays)
         val unit = f.meterUnit ?: s.vehicle?.vehicleType?.primaryMeter ?: MeterUnit.MILES
         val meter = f.meterEvery.toStoredMeter(unit)?.let { Math.round(it).toInt() }
         viewModelScope.launch {

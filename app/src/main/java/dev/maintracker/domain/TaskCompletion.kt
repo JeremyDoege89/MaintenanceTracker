@@ -2,6 +2,7 @@ package dev.maintracker.domain
 
 import dev.maintracker.data.model.MaintenanceTask
 import dev.maintracker.data.model.MeterUnit
+import dev.maintracker.data.model.TemplateKind
 import dev.maintracker.data.model.Vehicle
 import java.time.ZoneId
 
@@ -55,6 +56,9 @@ object TaskCompletion {
      *
      * Baseline meter: the reading entered on the record; else, for a completion logged today, the
      * vehicle's current reading; else the previous baseline (we never invent a reading).
+     *
+     * A ONE_TIME task (break-in, first service) is finished by any completion: it is deactivated
+     * and stops notifying instead of being rescheduled.
      */
     fun complete(
         task: MaintenanceTask,
@@ -67,12 +71,13 @@ object TaskCompletion {
     ): MaintenanceTask {
         val counted = task.copy(completedCount = task.completedCount + 1, updatedAt = now)
         val rebase = task.lastRecordId == null || date >= task.baselineDate
-        if (!rebase) return counted
-
-        val unit = task.meterUnit
-        val sameDay = DueCalculator.localDate(date, zone) == DueCalculator.localDate(now, zone)
-        val meter = unit?.let { readings[it] ?: vehicle.meter(it).takeIf { sameDay } } ?: task.baselineMeter
-        val rebased = counted.copy(baselineDate = date, baselineMeter = meter, lastRecordId = recordId)
-        return DueCalculator.recompute(rebased, vehicle, now, zone)
+        val result = if (!rebase) counted else {
+            val unit = task.meterUnit
+            val sameDay = DueCalculator.localDate(date, zone) == DueCalculator.localDate(now, zone)
+            val meter = unit?.let { readings[it] ?: vehicle.meter(it).takeIf { sameDay } } ?: task.baselineMeter
+            val rebased = counted.copy(baselineDate = date, baselineMeter = meter, lastRecordId = recordId)
+            DueCalculator.recompute(rebased, vehicle, now, zone)
+        }
+        return if (task.kind == TemplateKind.ONE_TIME) result.copy(isActive = false, notifyEnabled = false) else result
     }
 }

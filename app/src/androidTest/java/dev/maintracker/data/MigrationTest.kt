@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import dev.maintracker.data.db.MIGRATION_1_2
+import dev.maintracker.data.db.MIGRATION_2_3
 import org.junit.runner.RunWith
 
 /**
@@ -51,6 +52,46 @@ class MigrationTest {
                 assertEquals("Lazydays", c.getString(1))
                 assertEquals(89.5, c.getDouble(2), 0.0)
                 assertTrue(c.isNull(3))
+            }
+        }
+    }
+
+    /** v2 → v3 adds the library columns; old seeded templates and their tasks read as plain RECURRING. */
+    @Test
+    fun migrate2To3KeepsTemplatesAndTasks() {
+        helper.createDatabase(dbName, 2).use { db ->
+            db.execSQL("INSERT INTO vehicle (id, name, vehicleType, archived, createdAt, updatedAt) VALUES ('v', 'Rig', 'MOTORHOME', 0, 1, 1)")
+            db.execSQL(
+                "INSERT INTO maintenance_template (id, vehicleType, area, title, description, timeIntervalDays, defaultDueSoonPct, isSeeded, sortOrder) " +
+                    "VALUES ('old:oil', 'MOTORHOME', 'ENGINE', 'Oil', 'd', 365, 0.1, 1, 0)",
+            )
+            db.execSQL(
+                "INSERT INTO maintenance_task (id, vehicleId, templateId, area, title, timeIntervalDays, dueSoonPct, baselineDate, status, " +
+                    "leadDays, notifyEnabled, isActive, completedCount, sortOrder, createdAt, updatedAt) " +
+                    "VALUES ('t', 'v', 'old:oil', 'ENGINE', 'Oil', 365, 0.1, 1, 'OK', 14, 1, 1, 0, 0, 1, 1)",
+            )
+        }
+        helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).use { db ->
+            db.query("SELECT appliesTo, kind, phase, safetyCritical, retired, season FROM maintenance_template WHERE id = 'old:oil'").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals("all", c.getString(0))
+                assertEquals("RECURRING", c.getString(1))
+                assertEquals(1, c.getInt(2))
+                assertEquals(0, c.getInt(3))
+                assertEquals(0, c.getInt(4))
+                assertTrue(c.isNull(5))
+            }
+            db.query("SELECT templateId, kind, safetyCritical, timeIntervalDays FROM maintenance_task WHERE id = 't'").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals("old:oil", c.getString(0))
+                assertEquals("RECURRING", c.getString(1))
+                assertEquals(0, c.getInt(2))
+                assertEquals(365, c.getInt(3))
+            }
+            db.query("SELECT configTags, setupAnswers FROM vehicle WHERE id = 'v'").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals("", c.getString(0))
+                assertTrue(c.isNull(1))
             }
         }
     }

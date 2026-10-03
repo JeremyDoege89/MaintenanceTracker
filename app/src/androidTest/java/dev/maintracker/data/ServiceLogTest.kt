@@ -39,7 +39,7 @@ class ServiceLogTest {
     @Before fun setUp() = runTest {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
         db = Room.inMemoryDatabaseBuilder(ctx, AppDatabase::class.java).build()
-        repo = VehicleRepository(db, PhotoStore(ctx), clock = { now }, zone = { zone })
+        repo = VehicleRepository(db, PhotoStore(ctx), testLibrarySync(db), clock = { now }, zone = { zone })
         v = repo.createVehicle(
             Vehicle(name = "Rig", vehicleType = VehicleType.MOTORHOME, currentMiles = 40_000.0,
                 currentGeneratorHours = 100.0, createdAt = 0, updatedAt = 0),

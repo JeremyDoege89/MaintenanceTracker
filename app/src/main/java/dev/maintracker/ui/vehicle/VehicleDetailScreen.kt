@@ -89,6 +89,8 @@ import dev.maintracker.data.model.TaskStatus
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.domain.DueText
 import dev.maintracker.domain.Format
+import dev.maintracker.data.model.TemplateKind
+import dev.maintracker.domain.isFinishedOneTime
 import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.ServiceSheetRequest
 import dev.maintracker.ui.history.HistoryTab
@@ -477,12 +479,13 @@ private fun TaskRow(t: MaintenanceTask, modifier: Modifier = Modifier) {
     ) {
         Column(Modifier.weight(1f)) {
             Text(t.title, style = MaterialTheme.typography.titleSmall)
-            Text(Format.interval(t.timeIntervalDays, t.meterInterval, t.meterUnit),
+            Text(Format.interval(t.timeIntervalDays, t.meterInterval, t.meterUnit, t.kind == TemplateKind.ONE_TIME),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             DueText.dueLine(t)?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
         }
         Spacer(Modifier.width(8.dp))
         if (t.isActive) StatusPill(t.status)
+        else if (t.isFinishedOneTime) Text("Done", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

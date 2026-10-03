@@ -12,6 +12,14 @@ import dev.maintracker.data.model.MaintenanceTemplate
 import dev.maintracker.data.model.MeterUnit
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VehicleType
+import dev.maintracker.data.model.QuestionType
+import dev.maintracker.domain.library.LibraryMatcher
+import dev.maintracker.domain.library.MakeHints
+import dev.maintracker.domain.library.SetupAnswers
+import dev.maintracker.domain.library.SetupEvaluator
+import dev.maintracker.domain.library.SetupFile
+import dev.maintracker.domain.library.SetupResult
+import dev.maintracker.domain.library.isOfferable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Year
 
-enum class EditStep { TYPE, DETAILS, SCHEDULE }
+enum class EditStep { TYPE, DETAILS, SETUP, SCHEDULE }
 
 data class VehicleForm(
     val name: String = "",
@@ -45,9 +53,20 @@ data class EditState(
     val type: VehicleType? = null,
     val form: VehicleForm = VehicleForm(),
     val errors: Map<String, String> = emptyMap(),
+    /** Recommended + Might apply, as offered on the Schedule step. */
     val templates: List<MaintenanceTemplate> = emptyList(),
     val selected: Set<String> = emptySet(),
     val saving: Boolean = false,
+    /** Setup questions; loaded on first entry to the Setup step. */
+    val setup: SetupFile? = null,
+    val answers: SetupAnswers = emptyMap(),
+    /** Last evaluated answers; null until Setup's Next (or for an edit that never opened Setup). */
+    val setupResult: SetupResult? = null,
+    val recommendedIds: Set<String> = emptySet(),
+    val mightApplyIds: Set<String> = emptySet(),
+    /** EXPIRY template id -> made / installed / renewed date (local-zone millis). */
+    val expiryDates: Map<String, Long> = emptyMap(),
+    val disclaimer: String = "",
     /** Set once saved; the screen navigates on it. */
     val doneVehicleId: String? = null,
 )
@@ -66,11 +85,19 @@ class VehicleEditViewModel(
     private val importedPhotos = mutableSetOf<String>()
 
     init {
+        // Setup questions also feed the make suggestions on Details.
+        viewModelScope.launch {
+            val file = repo.setupQuestions()
+            _state.update { it.copy(setup = it.setup ?: file) }
+        }
         if (vehicleId != null) viewModelScope.launch {
             val v = repo.getVehicle(vehicleId) ?: return@launch
             original = v
             _state.update {
-                it.copy(loading = false, step = EditStep.DETAILS, type = v.vehicleType, form = v.toForm())
+                it.copy(
+                    loading = false, step = EditStep.DETAILS, type = v.vehicleType, form = v.toForm(),
+                    answers = SetupEvaluator.decodeAnswers(v.setupAnswers),
+                )
             }
         }
     }
@@ -80,7 +107,8 @@ class VehicleEditViewModel(
     fun back(): Boolean {
         val s = _state.value
         return when {
-            s.step == EditStep.SCHEDULE -> { _state.update { it.copy(step = EditStep.DETAILS) }; true }
+            s.step == EditStep.SCHEDULE -> { _state.update { it.copy(step = EditStep.SETUP) }; true }
+            s.step == EditStep.SETUP -> { _state.update { it.copy(step = EditStep.DETAILS) }; true }
             s.step == EditStep.DETAILS && s.isNew -> { _state.update { it.copy(step = EditStep.TYPE) }; true }
             else -> false
         }
@@ -106,15 +134,64 @@ class VehicleEditViewModel(
             _state.update { it.copy(errors = errors) }
             return
         }
-        if (s.isNew) {
-            viewModelScope.launch {
-                val templates = repo.templatesFor(type)
-                _state.update {
-                    it.copy(step = EditStep.SCHEDULE, templates = templates, selected = templates.map { t -> t.id }.toSet())
-                }
+        if (s.isNew) openSetup() else save()
+    }
+
+    /** Details -> Setup. Make hints pre-fill questions that are still unanswered. */
+    fun openSetup() {
+        val s = _state.value
+        val type = s.type ?: return
+        if (!s.isNew && validate(s.form, type).isNotEmpty()) return submitDetails()
+        viewModelScope.launch {
+            val file = s.setup ?: repo.setupQuestions()
+            _state.update {
+                it.copy(
+                    setup = file, step = EditStep.SETUP,
+                    answers = MakeHints.prefill(file, type, it.form.make, it.answers),
+                )
             }
-        } else {
-            save()
+        }
+    }
+
+    /** SINGLE: pick [optionId]. MULTI: toggle it. */
+    fun answer(questionId: String, optionId: String) = _state.update { s ->
+        val q = s.setup?.questions?.firstOrNull { it.id == questionId } ?: return@update s
+        val current = s.answers[questionId].orEmpty()
+        val next = when (q.type) {
+            QuestionType.SINGLE -> setOf(optionId)
+            QuestionType.MULTI -> if (optionId in current) current - optionId else current + optionId
+        }
+        s.copy(answers = s.answers + (questionId to next))
+    }
+
+    /** Setup -> Schedule: evaluate, match, keep what can be offered (IMPLEMENTATION.md §5 step 5). */
+    fun submitSetup() {
+        val s = _state.value
+        val type = s.type ?: return
+        val file = s.setup ?: return
+        if (SetupEvaluator.missingRequired(file, type, s.answers).isNotEmpty()) return
+        viewModelScope.launch {
+            val result = SetupEvaluator.evaluate(file, type, s.answers)
+            val match = LibraryMatcher.match(repo.templatesFor(type), type, result)
+            val vehicle = draft(s, type)
+            // Re-running Setup on a saved vehicle only offers what it doesn't already have.
+            val have = original?.let { v -> repo.tasksFor(v.id).mapNotNullTo(HashSet()) { it.templateId } }.orEmpty()
+            val offer = { list: List<MaintenanceTemplate> -> list.filter { it.isOfferable(vehicle) && it.id !in have } }
+            val recommended = offer(match.recommended)
+            val might = offer(match.mightApply)
+            val disclaimer = s.disclaimer.ifEmpty { repo.libraryDisclaimer() }
+            _state.update {
+                it.copy(
+                    step = EditStep.SCHEDULE,
+                    setupResult = result,
+                    templates = recommended + might,
+                    recommendedIds = recommended.mapTo(HashSet()) { t -> t.id },
+                    mightApplyIds = might.mapTo(HashSet()) { t -> t.id },
+                    selected = recommended.mapTo(HashSet()) { t -> t.id },
+                    expiryDates = it.expiryDates.filterKeys { id -> recommended.any { t -> t.id == id } || might.any { t -> t.id == id } },
+                    disclaimer = disclaimer,
+                )
+            }
         }
     }
 
@@ -122,8 +199,13 @@ class VehicleEditViewModel(
         it.copy(selected = if (id in it.selected) it.selected - id else it.selected + id)
     }
 
+    /** "All / None" covers the Recommended section only; Might apply stays opt-in per row. */
     fun setAllTemplates(on: Boolean) = _state.update {
-        it.copy(selected = if (on) it.templates.map { t -> t.id }.toSet() else emptySet())
+        it.copy(selected = if (on) it.selected + it.recommendedIds else it.selected - it.recommendedIds)
+    }
+
+    fun setExpiryDate(templateId: String, date: Long?) = _state.update {
+        it.copy(expiryDates = if (date == null) it.expiryDates - templateId else it.expiryDates + (templateId to date))
     }
 
     fun save() {
@@ -133,28 +215,43 @@ class VehicleEditViewModel(
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
             val f = s.form
-            val draft = (original ?: Vehicle(name = "", vehicleType = type, createdAt = 0, updatedAt = 0)).copy(
-                name = f.name.trim(),
-                year = f.year.trim().toIntOrNull(),
-                make = f.make.trim().ifEmpty { null },
-                model = f.model.trim().ifEmpty { null },
-                vinOrHin = f.vinOrHin.trim().uppercase().ifEmpty { null },
-                purchaseDate = f.purchaseDate,
-                purchaseMeter = f.purchaseMeter.toStoredMeter(type.primaryMeter),
-                currentMiles = f.miles.toStoredMeter(MeterUnit.MILES),
-                currentEngineHours = f.engineHours.toMeter(),
-                currentGeneratorHours = f.generatorHours.toMeter(),
-                notes = f.notes.trim().ifEmpty { null },
-                photoUri = f.photoPath,
-            )
+            val draft = draft(s, type)
+            // Dates only matter for EXPIRY rows the user kept.
+            val expiry = s.expiryDates.filterKeys { it in s.selected }
             val id = if (original == null) {
-                repo.createVehicle(draft, s.selected).id
+                repo.createVehicle(draft, s.selected, expiry).id
             } else {
-                repo.updateVehicle(draft)
+                repo.updateVehicle(draft, if (s.setupResult != null) s.selected else emptySet(), expiry)
                 draft.id
             }
             importedPhotos -= f.photoPath.orEmpty()
             _state.update { it.copy(saving = false, doneVehicleId = id) }
+        }
+    }
+
+    /** The vehicle as the form describes it; Setup's tags/answers once Setup has been evaluated. */
+    private fun draft(s: EditState, type: VehicleType): Vehicle {
+        val f = s.form
+        val base = original ?: Vehicle(name = "", vehicleType = type, createdAt = 0, updatedAt = 0)
+        return base.copy(
+            name = f.name.trim(),
+            year = f.year.trim().toIntOrNull(),
+            make = f.make.trim().ifEmpty { null },
+            model = f.model.trim().ifEmpty { null },
+            vinOrHin = f.vinOrHin.trim().uppercase().ifEmpty { null },
+            purchaseDate = f.purchaseDate,
+            purchaseMeter = f.purchaseMeter.toStoredMeter(type.primaryMeter),
+            currentMiles = f.miles.toStoredMeter(MeterUnit.MILES),
+            currentEngineHours = f.engineHours.toMeter(),
+            currentGeneratorHours = f.generatorHours.toMeter(),
+            notes = f.notes.trim().ifEmpty { null },
+            photoUri = f.photoPath,
+        ).let { v ->
+            val r = s.setupResult ?: return@let v
+            v.copy(
+                configTags = r.confirmed.sorted().joinToString(";"),
+                setupAnswers = SetupEvaluator.encodeAnswers(r.effectiveAnswers),
+            )
         }
     }
 

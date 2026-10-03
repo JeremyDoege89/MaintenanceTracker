@@ -14,7 +14,7 @@ enum class VehicleType(val label: String) {
     val meters: List<MeterUnit>
         get() = when (this) {
             MOTORHOME -> listOf(MeterUnit.MILES, MeterUnit.GENERATOR_HOURS)
-            TRAVEL_TRAILER -> listOf(MeterUnit.MILES)
+            TRAVEL_TRAILER -> listOf(MeterUnit.MILES, MeterUnit.GENERATOR_HOURS)
             BOAT_POWER -> listOf(MeterUnit.ENGINE_HOURS, MeterUnit.GENERATOR_HOURS)
             BOAT_SAIL -> listOf(MeterUnit.ENGINE_HOURS, MeterUnit.GENERATOR_HOURS)
             MOTORCYCLE -> listOf(MeterUnit.MILES)
@@ -73,3 +73,30 @@ enum class TaskStatus { OK, DUE_SOON, OVERDUE, MANUAL }
 enum class AttachmentKind { PHOTO, RECEIPT, MANUAL, INSURANCE, OTHER }
 
 enum class ReminderKind { DUE_SOON_TIME, OVERDUE_TIME, DUE_SOON_METER, OVERDUE_METER }
+
+/** How a library template schedules (IMPLEMENTATION.md §4.2). */
+enum class TemplateKind {
+    /** Time and/or meter from the last completion, whichever first. */
+    RECURRING,
+    /** Age limit from [DateBasis]; completion resets the baseline to the service date. */
+    EXPIRY,
+    /** Once a year, first due at the next season anchor. */
+    SEASONAL,
+    /** Break-in / first service, measured from 0 on the meter; deactivated once completed. */
+    ONE_TIME,
+    /** No generic interval: seeded MANUAL so the owner fills it in from the manual. */
+    PER_MANUAL,
+    // Phase 2 — never offered yet.
+    PRE_USE,
+    POST_USE,
+    EVENT,
+}
+
+/** What an EXPIRY template's age is counted from. */
+enum class DateBasis { MANUFACTURE_DATE, INSTALL_DATE, IN_SERVICE_DATE, REGISTRATION_DATE }
+
+enum class Season { FALL, SPRING }
+
+enum class SourceTier { NAMED_SOURCE, GENERAL_PRACTICE }
+
+enum class QuestionType { SINGLE, MULTI }

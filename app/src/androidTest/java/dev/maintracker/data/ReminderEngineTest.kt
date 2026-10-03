@@ -61,7 +61,7 @@ class ReminderEngineTest {
     @Before fun setUp() = runTest {
         db = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getInstrumentation().targetContext, AppDatabase::class.java).build()
         engine = ReminderEngine(db, { prefs }, alarms, notifier, clock = { now }, zone = { zone })
-        repo = VehicleRepository(db, PhotoStore(InstrumentationRegistry.getInstrumentation().targetContext),
+        repo = VehicleRepository(db, PhotoStore(InstrumentationRegistry.getInstrumentation().targetContext), testLibrarySync(db),
             clock = { now }, zone = { zone }, onChanged = { engine.sync(it) })
         v = repo.createVehicle(Vehicle(name = "Rig", vehicleType = VehicleType.MOTORHOME, currentMiles = 10_000.0,
             createdAt = 0, updatedAt = 0), emptySet())

@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import dev.maintracker.data.model.Area
 import dev.maintracker.data.model.Attachment
 import dev.maintracker.data.model.MaintenanceTask
@@ -89,18 +90,25 @@ interface VehicleDao {
 
 @Dao
 interface TemplateDao {
-    /** IGNORE so shipped rows never clobber user edits to existing template ids. */
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIgnore(templates: List<MaintenanceTemplate>)
+    /** Insert-or-update in place. Never REPLACE: its delete would SET NULL every linked task's templateId. */
+    @Upsert
+    suspend fun upsertAll(templates: List<MaintenanceTemplate>)
 
     @Query("SELECT id FROM maintenance_template")
     suspend fun ids(): List<String>
 
-    @Query("SELECT * FROM maintenance_template WHERE vehicleType = :type ORDER BY sortOrder")
+    @Query("SELECT id FROM maintenance_template WHERE isSeeded = 1")
+    suspend fun seededIds(): List<String>
+
+    @Query("UPDATE maintenance_template SET retired = 1 WHERE id IN (:ids)")
+    suspend fun retire(ids: List<String>)
+
+    /** What a new vehicle can be offered: phase-1, not retired. */
+    @Query("SELECT * FROM maintenance_template WHERE vehicleType = :type AND retired = 0 AND phase = 1 ORDER BY sortOrder")
     suspend fun forType(type: VehicleType): List<MaintenanceTemplate>
 
-    @Query("SELECT COUNT(*) FROM maintenance_template WHERE isSeeded = 1")
-    suspend fun countSeeded(): Int
+    @Query("SELECT * FROM maintenance_template WHERE id = :id")
+    suspend fun get(id: String): MaintenanceTemplate?
 }
 
 @Dao

@@ -10,6 +10,8 @@ import dev.maintracker.billing.FakeBillingGateway
 import dev.maintracker.billing.PlayBillingGateway
 import dev.maintracker.billing.ProManager
 import dev.maintracker.data.BackupManager
+import dev.maintracker.data.LibraryAssets
+import dev.maintracker.data.LibrarySync
 import dev.maintracker.data.PhotoStore
 import dev.maintracker.data.SettingsStore
 import dev.maintracker.data.VehicleRepository
@@ -43,9 +45,15 @@ class MaintTrackerApp : Application() {
         if (BuildConfig.DEBUG && FakeBillingGateway.enabled(this)) FakeBillingGateway(this) else PlayBillingGateway(this)
     }
     val pro by lazy { ProManager(billing, DataStoreEntitlementCache(this), appScope) }
+    val library by lazy {
+        LibrarySync(
+            database, LibraryAssets(assets::open),
+            storedVersion = settings::libraryDataVersion, setStoredVersion = { settings.setLibraryDataVersion(it) },
+        )
+    }
     val repository by lazy {
         VehicleRepository(
-            database, photos,
+            database, photos, library,
             leadCap = { settings.current().dueSoonDays },
             onChanged = { vehicleId -> reminders.sync(vehicleId) },
         )
@@ -71,7 +79,7 @@ class MaintTrackerApp : Application() {
             PeriodicWorkRequestBuilder<DailyCheckWorker>(1, TimeUnit.DAYS).build(),
         )
         appScope.launch {
-            repository.ensureSeedTemplates()
+            repository.syncLibrary()
             repository.recomputeAll()
         }
     }

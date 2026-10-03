@@ -20,8 +20,8 @@ import kotlinx.coroutines.launch
 
 /**
  * Permission moments in context, never up front (Build Guide §5.1, §6.3): once there is something
- * to remind about, a plain-words pre-prompt, then the system dialog; then — once — an explainer if
- * precise alarms are off. Each is answered once and never shown again; Settings can change either.
+ * to remind about, a plain-words pre-prompt, then the system dialog; then — once, and only if
+ * notifications are allowed — an explainer if precise alarms are off. Each is answered once and never shown again; Settings can change either.
  */
 @Composable
 fun ReminderPermissionPrompts() {
@@ -39,7 +39,9 @@ fun ReminderPermissionPrompts() {
     }
 
     val needsNotif = Build.VERSION.SDK_INT >= 33 && !s.notificationPromptAnswered && !notificationsAllowed(context)
-    val needsExact = !needsNotif && !s.exactAlarmExplainerShown && !app.alarms.canScheduleExact()
+    // Precise timing only matters once notifications can actually be shown.
+    val needsExact = !needsNotif && notificationsAllowed(context) &&
+        !s.exactAlarmExplainerShown && !app.alarms.canScheduleExact()
 
     when {
         needsNotif -> AlertDialog(

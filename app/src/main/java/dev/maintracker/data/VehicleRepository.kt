@@ -14,7 +14,10 @@ import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VendorType
 import dev.maintracker.data.model.VehicleType
-import dev.maintracker.data.seed.SeedTemplates
+import dev.maintracker.data.model.TemplateKind
+import dev.maintracker.domain.library.SetupFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import dev.maintracker.domain.DueCalculator
 import dev.maintracker.domain.MeterReadings
 import dev.maintracker.domain.TaskCompletion
@@ -52,6 +55,8 @@ class UndoSnapshot internal constructor(
 class VehicleRepository(
     private val db: AppDatabase,
     private val photos: PhotoStore,
+    /** The shipped maintenance library; synced into maintenance_template before any template read. */
+    private val library: LibrarySync,
     private val clock: () -> Long = System::currentTimeMillis,
     private val zone: () -> ZoneId = ZoneId::systemDefault,
     /** Global due-soon cap from Settings (§6.2). */
@@ -117,19 +122,30 @@ class VehicleRepository(
 
     suspend fun getVehicle(id: String): Vehicle? = vehicles.get(id)
 
-    /** Idempotent: inserts any shipped template rows not already present, never overwrites edits. */
-    suspend fun ensureSeedTemplates() {
-        db.templates().insertIgnore(SeedTemplates.all)
-    }
+    /** Idempotent: applies the shipped library when its dataVersion is newer than the last one applied. */
+    suspend fun syncLibrary() = library.syncIfNeeded()
 
+    /** Phase-1, non-retired templates for [type]. Syncs first: the app-start sync runs async. */
     suspend fun templatesFor(type: VehicleType): List<MaintenanceTemplate> {
-        // The app-start seed runs async; don't let a fast first tap see an empty schedule.
-        if (db.templates().countSeeded() == 0) ensureSeedTemplates()
+        library.syncIfNeeded()
         return db.templates().forType(type)
     }
 
-    /** Inserts the vehicle and the user-selected seeded tasks in one transaction. */
-    suspend fun createVehicle(draft: Vehicle, selectedTemplateIds: Set<String>): Vehicle {
+    suspend fun getTemplate(id: String): MaintenanceTemplate? = db.templates().get(id)
+
+    suspend fun setupQuestions(): SetupFile = withContext(Dispatchers.IO) { library.assets.setup }
+
+    suspend fun libraryDisclaimer(): String = withContext(Dispatchers.IO) { library.assets.library.disclaimer }
+
+    /**
+     * Inserts the vehicle and the user-selected library tasks in one transaction. [expiryDates]:
+     * template id -> "made / installed / last renewed" date for EXPIRY templates.
+     */
+    suspend fun createVehicle(
+        draft: Vehicle,
+        selectedTemplateIds: Set<String>,
+        expiryDates: Map<String, Long> = emptyMap(),
+    ): Vehicle {
         val now = clock()
         val vehicle = draft.copy(
             createdAt = now,
@@ -138,15 +154,30 @@ class VehicleRepository(
             metersUpdatedAt = now.takeIf { hasAnyMeter(draft) },
         )
         val chosen = templatesFor(vehicle.vehicleType).filter { it.id in selectedTemplateIds }
+        val seeded = seed(vehicle, chosen, now, expiryDates)
         db.withTransaction {
             vehicles.insert(vehicle)
-            tasks.insertAll(TaskSeeder.seed(vehicle, chosen, now, zone(), leadCap()))
+            tasks.insertAll(seeded)
         }
         onChanged(vehicle.id)
         return vehicle
     }
 
-    suspend fun updateVehicle(edited: Vehicle) {
+    private suspend fun seed(vehicle: Vehicle, templates: List<MaintenanceTemplate>, now: Long, expiryDates: Map<String, Long>) =
+        TaskSeeder.seed(
+            vehicle, templates, now, zone(), leadCap(), expiryDates,
+            withContext(Dispatchers.IO) { library.assets.library.defaults.anchors },
+        )
+
+    /**
+     * Saves vehicle edits. From a re-run of Setup, [addTemplateIds] seeds tasks for newly matching
+     * templates the vehicle has no task for yet; existing tasks are never removed or changed.
+     */
+    suspend fun updateVehicle(
+        edited: Vehicle,
+        addTemplateIds: Set<String> = emptySet(),
+        expiryDates: Map<String, Long> = emptyMap(),
+    ) {
         val now = clock()
         val old = vehicles.get(edited.id) ?: return
         val metersChanged = old.currentMiles != edited.currentMiles ||
@@ -158,8 +189,14 @@ class VehicleRepository(
             metersUpdatedAt = if (metersChanged) now else edited.metersUpdatedAt,
         )
         if (old.photoUri != null && old.photoUri != vehicle.photoUri) photos.delete(old.photoUri)
+        val toAdd = if (addTemplateIds.isEmpty()) emptyList() else {
+            val have = tasks.forVehicle(vehicle.id).mapNotNullTo(HashSet()) { it.templateId }
+            templatesFor(vehicle.vehicleType).filter { it.id in addTemplateIds && it.id !in have }
+        }
+        val seeded = if (toAdd.isEmpty()) emptyList() else seed(vehicle, toAdd, now, expiryDates)
         db.withTransaction {
             vehicles.update(vehicle)
+            if (seeded.isNotEmpty()) tasks.insertAll(seeded)
             refreshTasks(vehicle, now)
         }
         onChanged(vehicle.id)
@@ -272,6 +309,10 @@ class VehicleRepository(
                     } else {
                         t.copy(lastRecordId = null)
                     }
+                }
+                // A one-time task's only completion is gone: it is open again.
+                if (t.kind == TemplateKind.ONE_TIME && t.completedCount == 0 && !t.isActive) {
+                    t = t.copy(isActive = true, notifyEnabled = true)
                 }
                 tasks.update(t)
             }

@@ -52,7 +52,10 @@ import dev.maintracker.data.model.TaskStatus
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.domain.DueText
 import dev.maintracker.domain.Format
+import dev.maintracker.domain.isFinishedOneTime
 import dev.maintracker.ui.common.InfoCard
+import dev.maintracker.data.model.TemplateKind
+import androidx.compose.material.icons.filled.Shield
 import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.PrimaryButton
 import dev.maintracker.ui.common.ServiceSheetRequest
@@ -77,6 +80,8 @@ data class TaskDetailState(
     val vehicle: Vehicle? = null,
     val records: List<ServiceRecord> = emptyList(),
     val parts: List<Part> = emptyList(),
+    /** Library template this task came from, for "Why this interval?". */
+    val template: dev.maintracker.data.model.MaintenanceTemplate? = null,
 )
 
 class TaskDetailViewModel(private val repo: VehicleRepository, private val taskId: String) : ViewModel() {
@@ -87,7 +92,8 @@ class TaskDetailViewModel(private val repo: VehicleRepository, private val taskI
             repo.observeVehicle(t.vehicleId),
             repo.observeRecordsForTask(taskId),
             repo.observePartsForTask(taskId),
-        ) { v, r, p -> TaskDetailState(true, t, v, r, p) }
+            kotlinx.coroutines.flow.flow { emit(t.templateId?.let { repo.getTemplate(it) }) },
+        ) { v, r, p, tpl -> TaskDetailState(true, t, v, r, p, tpl) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TaskDetailState())
 
     fun setActive(active: Boolean) = viewModelScope.launch { repo.setTaskActive(taskId, active) }
@@ -149,12 +155,21 @@ fun TaskDetailScreen(
                     Text(t.title, style = MaterialTheme.typography.headlineSmall)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         AssistChip(onClick = {}, label = { Text(listOfNotNull(t.area.label, t.areaDetail).joinToString(" · ")) })
-                        if (t.isActive) StatusPill(t.status) else Text("Disabled", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        when {
+                            t.isActive -> StatusPill(t.status)
+                            t.isFinishedOneTime ->
+                                Text("Done", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            else -> Text("Disabled", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (t.safetyCritical) {
+                            AssistChip(onClick = {}, label = { Text("Safety") },
+                                leadingIcon = { Icon(Icons.Filled.Shield, contentDescription = null) })
+                        }
                     }
                     t.description?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
 
                     InfoCard("Schedule") {
-                        Text(Format.interval(t.timeIntervalDays, t.meterInterval, t.meterUnit), style = MaterialTheme.typography.bodyLarge)
+                        Text(Format.interval(t.timeIntervalDays, t.meterInterval, t.meterUnit, t.kind == TemplateKind.ONE_TIME), style = MaterialTheme.typography.bodyLarge)
                         Text(baselineLine(t), style = MaterialTheme.typography.bodyMedium)
                         DueText.dueLine(t)?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
                         if (t.isActive && t.status != TaskStatus.MANUAL) {
@@ -164,6 +179,7 @@ fun TaskDetailScreen(
                         val nextReminder by produceState<Long?>(null, t) { value = context.app().reminders.nextFireAt(t.id) }
                         Text(
                             when {
+                                t.isFinishedOneTime -> "One-time task — done, nothing more is due"
                                 !t.notifyEnabled -> "Reminders off for this task"
                                 nextReminder != null -> "Next reminder " +
                                     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(nextReminder!!))
@@ -175,13 +191,32 @@ fun TaskDetailScreen(
                         )
                     }
 
-                    PrimaryButton(
-                        "Mark complete",
-                        onClick = { actions.openServiceSheet(ServiceSheetRequest(vehicleId = v.id, taskId = t.id)) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    if (!t.isFinishedOneTime) {
+                        PrimaryButton(
+                            "Mark complete",
+                            onClick = { actions.openServiceSheet(ServiceSheetRequest(vehicleId = v.id, taskId = t.id)) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
 
-                    t.notes?.let { InfoCard("Notes") { Text(it) } }
+                    val tpl = s.template
+                    val why = listOfNotNull(
+                        tpl?.typicalRange?.let { "Typical range" to it },
+                        tpl?.severeService?.let { "Severe service" to it },
+                        tpl?.source?.let { "Source" to it },
+                    )
+                    if (why.isNotEmpty()) {
+                        InfoCard("Why this interval?") {
+                            why.forEach { (k, v) ->
+                                Column {
+                                    Text(k, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(v, style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        }
+                    }
+                    // Library notes repeat the "Why" card; show notes only once the owner has changed them.
+                    t.notes?.takeIf { why.isEmpty() || it != tpl?.notes }?.let { InfoCard("Notes") { Text(it) } }
 
                     InfoCard("History (${s.records.size})") {
                         if (s.records.isEmpty()) {

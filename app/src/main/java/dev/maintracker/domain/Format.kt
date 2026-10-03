@@ -42,14 +42,15 @@ object Format {
     fun localeCurrency(): String =
         runCatching { Currency.getInstance(Locale.getDefault()).currencyCode }.getOrNull() ?: "USD"
 
-    /** "Every 6 months or 5,000 mi — whichever first". */
-    fun interval(days: Int?, meter: Int?, unit: MeterUnit?): String {
-        val time = days?.let { "Every ${days(it)}" }
+    /** "Every 6 months or 5,000 mi — whichever first"; a [oneTime] task reads "Once at 1,000 mi". */
+    fun interval(days: Int?, meter: Int?, unit: MeterUnit?, oneTime: Boolean = false): String {
+        val lead = if (oneTime) "Once at" else "Every"
+        val time = days?.let { "$lead ${days(it)}" }
         val m = if (meter != null && unit != null) meter(meter.toDouble(), unit) else null
         return when {
             time != null && m != null -> "$time or $m — whichever first"
             time != null -> time
-            m != null -> "Every $m"
+            m != null -> "$lead $m"
             else -> "Checklist item — no set interval"
         }
     }
