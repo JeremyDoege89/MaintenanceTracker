@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "dataVersion": 1,
+  "dataVersion": 2,
   "rules": {
     "unansweredSingle": "Treat as 'Not sure': every tag and maybeTag of its visible options becomes a maybe tag.",
     "unansweredMulti": "Means 'none of these': contributes no tags.",
@@ -29,9 +29,15 @@
   "makeHints": [
     {
       "vehicleType": "MOTORCYCLE",
-      "makePattern": "(?i)harley",
+      "makePattern": "(?i)harley|^\\s*h\\.?-?d\\.?\\s*$",
       "questionId": "mc_brand",
       "optionId": "harley"
+    },
+    {
+      "vehicleType": "MOTORCYCLE",
+      "makePattern": "(?i)^(?!.*harley)(?!\\s*h\\.?-?d\\.?\\s*$).*\\S",
+      "questionId": "mc_brand",
+      "optionId": "other"
     },
     {
       "vehicleType": "PWC",
@@ -1340,7 +1346,8 @@
           "id": "other",
           "label": "No, another brand",
           "tags": [
-            "adjustable_valves"
+            "adjustable_valves",
+            "non_harley"
           ],
           "maybeTags": []
         }

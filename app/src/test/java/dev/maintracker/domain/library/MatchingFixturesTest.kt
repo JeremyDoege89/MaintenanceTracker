@@ -86,9 +86,48 @@ class MatchingFixturesTest {
         assertEquals(setOf("harley"), MakeHints.prefill(setup, type, "Harley-Davidson", emptyMap())["mc_brand"])
         val answered = mapOf("mc_brand" to setOf("other"))
         assertEquals(answered, MakeHints.prefill(setup, type, "harley", answered))
-        assertEquals(emptyMap<String, Set<String>>(), MakeHints.prefill(setup, type, "Honda", emptyMap()))
+        // Every other make answers "No" to the Harley question; a blank make answers nothing.
+        assertEquals(setOf("other"), MakeHints.prefill(setup, type, "Honda", emptyMap())["mc_brand"])
+        assertEquals(emptyMap<String, Set<String>>(), MakeHints.prefill(setup, type, "  ", emptyMap()))
         // Other types' hints never leak across.
         assertEquals(emptyMap<String, Set<String>>(), MakeHints.prefill(setup, VehicleType.MOTORHOME, "Harley", emptyMap()))
+    }
+
+    @Test fun harleyMakeSpellings() {
+        val type = VehicleType.MOTORCYCLE
+        fun brand(make: String) = MakeHints.prefill(setup, type, make, emptyMap())["mc_brand"]
+        for (m in listOf("Harley-Davidson", "harley davidson", "Harley", "HD", "H-D", "h.d.", " H-D ")) assertEquals(m, setOf("harley"), brand(m))
+        for (m in listOf("Honda", "Indian", "BMW", "Hyosung", "Husqvarna", "HDX Motors", "Kawasaki")) assertEquals(m, setOf("other"), brand(m))
+    }
+
+    @Test fun hintedAnswersFollowTheMakeUntilTapped() {
+        val type = VehicleType.MOTORCYCLE
+        val (first, hinted) = MakeHints.refresh(setup, type, "Honda", emptyMap(), emptySet())
+        assertEquals(setOf("other"), first["mc_brand"])
+        assertEquals(setOf("mc_brand"), hinted)
+        // Back to Details, make corrected: the hinted "No" flips to "Yes".
+        val (second, hinted2) = MakeHints.refresh(setup, type, "Harley-Davidson", first, hinted)
+        assertEquals(setOf("harley"), second["mc_brand"])
+        assertEquals(setOf("mc_brand"), hinted2)
+        // Make cleared: a hinted answer is withdrawn rather than left stale.
+        assertEquals(null, MakeHints.refresh(setup, type, "", second, hinted2).first["mc_brand"])
+        // A tapped answer is the owner's and is never overridden.
+        val tapped = mapOf("mc_brand" to setOf("other"))
+        assertEquals(tapped to emptySet<String>(), MakeHints.refresh(setup, type, "Harley", tapped, emptySet()))
+    }
+
+    @Test fun breakInSplitsByBrand() {
+        val type = VehicleType.MOTORCYCLE
+        val base = mapOf("mc_drive" to setOf("chain"))
+        fun rec(brand: String) = LibraryMatcher.match(templates, type,
+            SetupEvaluator.evaluate(setup, type, base + ("mc_brand" to setOf(brand)))).recommended.map { it.id }.toSet()
+        val generic = "std:MOTORCYCLE:break-in-first-service"
+        val hd = "std:MOTORCYCLE:break-in-first-service-h-d"
+        assertTrue(generic in rec("other") && hd !in rec("other"))
+        assertTrue(hd in rec("harley") && generic !in rec("harley"))
+        // The generic one names no brand.
+        val g = templates.first { it.id == generic }
+        assertTrue(listOfNotNull(g.description, g.source, g.typicalRange).none { "H-D" in it || "Harley" in it })
     }
 
     @Test fun wouldApplyIfNamesTheOption() {

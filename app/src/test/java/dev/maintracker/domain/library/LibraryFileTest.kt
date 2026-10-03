@@ -13,9 +13,9 @@ class LibraryFileTest {
     private val lib = TestLibrary.library
     private val phase1 = lib.templates.filter { it.phase == 1 }
 
-    @Test fun decodes528TemplatesWithUniqueIds() {
-        assertEquals(528, lib.templates.size)
-        assertEquals(528, lib.templates.map { it.id }.toSet().size)
+    @Test fun decodes529TemplatesWithUniqueIds() {
+        assertEquals(529, lib.templates.size)
+        assertEquals(529, lib.templates.map { it.id }.toSet().size)
         lib.templates.forEach { assertTrue(it.id, it.id.startsWith("std:${it.vehicleType.name}:")) }
         assertTrue(lib.disclaimer.isNotBlank())
     }
@@ -30,12 +30,12 @@ class LibraryFileTest {
     }
 
     @Test fun phase1CountsMatchTheBrief() {
-        assertEquals(416, phase1.size)
+        assertEquals(417, phase1.size)
         val byType = phase1.groupingBy { it.vehicleType }.eachCount()
         assertEquals(
             mapOf(
                 VehicleType.MOTORHOME to 94, VehicleType.TRAVEL_TRAILER to 67, VehicleType.BOAT_POWER to 71,
-                VehicleType.BOAT_SAIL to 90, VehicleType.MOTORCYCLE to 29, VehicleType.ATV_UTV to 26, VehicleType.PWC to 39,
+                VehicleType.BOAT_SAIL to 90, VehicleType.MOTORCYCLE to 30, VehicleType.ATV_UTV to 26, VehicleType.PWC to 39,
             ),
             byType,
         )

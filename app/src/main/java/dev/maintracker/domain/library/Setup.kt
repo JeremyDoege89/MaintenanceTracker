@@ -185,4 +185,17 @@ object MakeHints {
         }
         return out
     }
+
+    /**
+     * [prefill] again after the make may have changed: answers in [hinted] (set by an earlier hint,
+     * never tapped) are re-derived, so Honda -> Harley flips "No" back. Returns the answers and the
+     * question ids that now hold a hinted answer.
+     */
+    fun refresh(
+        file: SetupFile, type: VehicleType, make: String?, answers: SetupAnswers, hinted: Set<String>,
+    ): Pair<SetupAnswers, Set<String>> {
+        val base = answers - hinted
+        val out = prefill(file, type, make, base)
+        return out to out.keys.filter { base[it].orEmpty().isEmpty() && out[it].orEmpty().isNotEmpty() }.toSet()
+    }
 }

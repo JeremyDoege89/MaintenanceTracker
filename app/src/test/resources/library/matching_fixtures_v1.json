@@ -562,7 +562,7 @@
         "std:MOTORCYCLE:battery-test",
         "std:MOTORCYCLE:brake-fluid-dot-4",
         "std:MOTORCYCLE:brake-pads-and-rotors",
-        "std:MOTORCYCLE:break-in-first-service",
+        "std:MOTORCYCLE:break-in-first-service-h-d",
         "std:MOTORCYCLE:drive-belt-inspection",
         "std:MOTORCYCLE:engine-oil-and-filter",
         "std:MOTORCYCLE:fastener-torque-check-axles-bar-clamps-switch-housings",
@@ -603,7 +603,8 @@
         "adjustable_valves",
         "cable_clutch",
         "chain_drive",
-        "efi"
+        "efi",
+        "non_harley"
       ],
       "expectedMaybeTags": [
         "liquid_cooled"

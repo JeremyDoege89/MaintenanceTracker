@@ -9,7 +9,7 @@
 
 ## 1. Goal
 
-Replace the hardcoded `SeedTemplates` with a data-driven library of 528 sourced maintenance templates, 416 of which are offered in Phase 1.
+Replace the hardcoded `SeedTemplates` with a data-driven library of 529 sourced maintenance templates, 417 of which are offered in Phase 1.
 
 Add a **Setup** step to the add-vehicle flow so each vehicle only gets the tasks that fit how it's built. Examples of what Setup asks:
 
@@ -123,7 +123,7 @@ How the meter fields were filled:
 | `RECURRING` | 331 | Today's behavior: time and/or meter, whichever comes first, from the last completion. |
 | `EXPIRY` | 48 | Age limit counted from `dateBasis`, for example tire age from the DOT date or flares from the manufacture date. Completion resets the baseline to the service date. |
 | `SEASONAL` | 11 | Once a year. The first due date is the next season anchor; after that, 365 days from completion. |
-| `ONE_TIME` | 15 | Break-in and first services, measured from 0 on the meter. Only offered while the current meter is below the interval. Deactivated once completed. |
+| `ONE_TIME` | 16 | Break-in and first services, measured from 0 on the meter. Only offered while the current meter is below the interval. Deactivated once completed. |
 | `PER_MANUAL` | 11 | No generic value exists. Seeded with no intervals, so it lands in `MANUAL` status and prompts the owner. |
 | `PRE_USE`, `POST_USE`, `EVENT` | 0 (109 in phase 2) | Checklists and event triggers. **Not in Phase 1.** |
 
@@ -137,7 +137,7 @@ Phase-1 templates per type:
 | `TRAVEL_TRAILER` | 67 |
 | `BOAT_POWER` | 71 |
 | `BOAT_SAIL` | 90 |
-| `MOTORCYCLE` | 29 |
+| `MOTORCYCLE` | 30 |
 | `ATV_UTV` | 26 |
 | `PWC` | 39 |
 
@@ -363,7 +363,7 @@ From vehicle edit, reopen Setup with the saved `setupAnswers`. On save:
 **JVM unit tests:**
 
 1. **Library parse.**
-   - The asset decodes to 528 templates with unique ids.
+   - The asset decodes to 529 templates with unique ids.
    - Every enum value is valid, and every `meterUnit` is in `vehicleType.meters` (after step 9).
    - Phase-1 RECURRING, EXPIRY and SEASONAL templates have an interval, and ONE_TIME templates have a `meterInterval`.
 2. **Golden fixtures.** For each of the 9 scenarios in `matching_fixtures_v1.json`:

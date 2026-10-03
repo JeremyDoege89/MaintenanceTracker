@@ -60,6 +60,8 @@ data class EditState(
     /** Setup questions; loaded on first entry to the Setup step. */
     val setup: SetupFile? = null,
     val answers: SetupAnswers = emptyMap(),
+    /** Questions whose answer came from a make hint and not a tap; they follow the make if it changes. */
+    val hintedAnswers: Set<String> = emptySet(),
     /** Last evaluated answers; null until Setup's Next (or for an edit that never opened Setup). */
     val setupResult: SetupResult? = null,
     val recommendedIds: Set<String> = emptySet(),
@@ -137,7 +139,7 @@ class VehicleEditViewModel(
         if (s.isNew) openSetup() else save()
     }
 
-    /** Details -> Setup. Make hints pre-fill questions that are still unanswered. */
+    /** Details -> Setup. Make hints pre-fill questions that are unanswered or were only hinted. */
     fun openSetup() {
         val s = _state.value
         val type = s.type ?: return
@@ -145,10 +147,8 @@ class VehicleEditViewModel(
         viewModelScope.launch {
             val file = s.setup ?: repo.setupQuestions()
             _state.update {
-                it.copy(
-                    setup = file, step = EditStep.SETUP,
-                    answers = MakeHints.prefill(file, type, it.form.make, it.answers),
-                )
+                val (answers, hinted) = MakeHints.refresh(file, type, it.form.make, it.answers, it.hintedAnswers)
+                it.copy(setup = file, step = EditStep.SETUP, answers = answers, hintedAnswers = hinted)
             }
         }
     }
@@ -161,7 +161,7 @@ class VehicleEditViewModel(
             QuestionType.SINGLE -> setOf(optionId)
             QuestionType.MULTI -> if (optionId in current) current - optionId else current + optionId
         }
-        s.copy(answers = s.answers + (questionId to next))
+        s.copy(answers = s.answers + (questionId to next), hintedAnswers = s.hintedAnswers - questionId)
     }
 
     /** Setup -> Schedule: evaluate, match, keep what can be offered (IMPLEMENTATION.md §5 step 5). */
