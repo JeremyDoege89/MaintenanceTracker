@@ -15,6 +15,9 @@ import dev.maintracker.data.model.VehicleType
 import dev.maintracker.data.model.QuestionType
 import dev.maintracker.domain.library.LibraryMatcher
 import dev.maintracker.data.vin.VinDecoder
+import dev.maintracker.domain.HinFill
+import dev.maintracker.domain.HinParser
+import dev.maintracker.domain.MicTable
 import dev.maintracker.domain.VinFill
 import dev.maintracker.domain.VinValidator
 import dev.maintracker.domain.library.MakeHints
@@ -98,6 +101,8 @@ class VehicleEditViewModel(
     private val photos: PhotoStore,
     private val vehicleId: String?,
     private val vinDecoder: VinDecoder,
+    /** Blocking first call (parses the bundled USCG table); called on IO. */
+    private val micTable: () -> MicTable,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditState(isNew = vehicleId == null, loading = vehicleId != null))
@@ -151,7 +156,8 @@ class VehicleEditViewModel(
     fun decodeVin() {
         val s = _state.value
         val type = s.type ?: return
-        if (s.vin.decoding || !type.decodesVin) return
+        if (s.vin.decoding) return
+        if (!type.decodesVin) return decodeHin(s, type)
         val checked = VinValidator.validate(s.form.vinOrHin)
         if (checked is VinValidator.Result.BadFormat) {
             _state.update { it.copy(vin = VinUi(error = checked.reason)) }
@@ -163,6 +169,34 @@ class VehicleEditViewModel(
         viewModelScope.launch {
             val outcome = vinDecoder.decode(checked.vin, typedYear)
             _state.update { cur -> cur.copy(vin = cur.vin.copy(decoding = false)).applyVin(type, outcome) }
+        }
+    }
+
+    /** Boats / PWC: HIN decoded on the phone (MIC table + model-year digits); never sent anywhere. */
+    private fun decodeHin(s: EditState, type: VehicleType) {
+        val parsed = HinParser.parse(s.form.vinOrHin, Year.now().value)
+        if (parsed is HinParser.Result.BadFormat) {
+            _state.update { it.copy(vin = VinUi(error = parsed.reason)) }
+            return
+        }
+        parsed as HinParser.Result.Valid
+        _state.update { it.copy(vin = VinUi(decoding = true)) }
+        viewModelScope.launch {
+            val entry = withContext(Dispatchers.IO) { micTable().lookup(parsed.mic) }
+            _state.update { cur ->
+                val fill = HinFill.fill(cur.form.year, cur.form.make, parsed.modelYear, entry,
+                    cur.setup?.commonMakes?.get(type).orEmpty())
+                val message = when {
+                    fill.filled.isNotEmpty() -> "Filled: " + fill.filled.joinToString(" · ")
+                    entry == null && parsed.modelYear == null -> "No maker or year in this HIN — enter details manually."
+                    else -> "Nothing to fill — your entries were kept."
+                }
+                cur.copy(
+                    form = cur.form.copy(year = fill.year?.toString() ?: cur.form.year, make = fill.make ?: cur.form.make),
+                    errors = cur.errors - setOfNotNull("year".takeIf { fill.year != null }, "make".takeIf { fill.make != null }),
+                    vin = VinUi(message = message),
+                )
+            }
         }
     }
 

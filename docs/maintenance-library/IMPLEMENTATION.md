@@ -41,6 +41,9 @@ Phase 1 product behavior:
 | `docs/maintenance-library/tools/csv_to_json.py` | Regenerates the JSON after spreadsheet edits. It validates the data and bumps `dataVersion`. |
 | `docs/maintenance-library/common_makes.csv` | Make suggestions per vehicle type (`vehicle_type,make`). |
 | `docs/maintenance-library/tools/makes_to_json.py` | Loads `common_makes.csv` into `commonMakes` in the setup questions JSON, sorts it, bumps that file's `dataVersion` and prints how each make answers the make-hinted questions. |
+| `app/src/main/assets/hin/uscg_mic.csv` | USCG Manufacturer Identification Codes (`mic,company,brand`), from `tools/fetch_uscg_mic.py`. Used offline to fill Make from a boat/PWC HIN. |
+| `app/src/main/assets/hin/mic_brand_overrides.csv` | Hand-kept `mic,brand` overrides, merged over the table at load. Re-fetching never touches it. |
+| `docs/maintenance-library/tools/mic_report.py` | Lists boat/PWC makes no MIC row matches, with candidate rows to confirm as overrides. |
 
 If the Android module isn't named `app`, move the two `app/...` folders to match.
 
@@ -419,6 +422,15 @@ To change the make suggestions, edit `docs/maintenance-library/common_makes.csv`
 `python3 docs/maintenance-library/tools/makes_to_json.py docs/maintenance-library/common_makes.csv app/src/main/assets/library/setup_questions_v1.json`.
 Check its printout: every motorcycle make except Harley-Davidson must answer `mc_brand=other`, because motorcycles
 require a make and Setup does not ask the Harley question when the make answers it.
+
+To refresh the HIN maker codes, run
+`python3 docs/maintenance-library/tools/fetch_uscg_mic.py app/src/main/assets/hin/uscg_mic.csv` (about 650 polite
+requests, 15 minutes), then
+`python3 docs/maintenance-library/tools/mic_report.py app/src/main/assets/hin/uscg_mic.csv app/src/main/assets/hin/mic_brand_overrides.csv app/src/main/assets/library/setup_questions_v1.json`
+and add confirmed candidates to `mic_brand_overrides.csv` (`mic,brand`; a brand wins over everything).
+Company names are compared with trailing Inc / LLC / Corp / Corporation / Co / Company / Ltd / Limited / Mfg /
+Manufacturing / Boats / Boat / Marine / Yachts ignored; an unmatched company goes into Make with only
+Inc / LLC / Corp / Co / Ltd removed.
 
 Rules for edits:
 

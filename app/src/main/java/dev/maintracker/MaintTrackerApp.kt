@@ -30,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 import dev.maintracker.data.vin.HttpVpicRemote
 import dev.maintracker.data.vin.VinDecoder
 import dev.maintracker.domain.Display
+import dev.maintracker.domain.MicTable
 import java.util.concurrent.TimeUnit
 
 class MaintTrackerApp : Application() {
@@ -54,6 +55,11 @@ class MaintTrackerApp : Application() {
         )
     }
     val vinDecoder by lazy { VinDecoder(database.vinDecodes(), HttpVpicRemote()) }
+    /** USCG MIC list plus the hand-kept brand overrides (assets/hin/; see docs/maintenance-library/IMPLEMENTATION.md). Parsed on first use. */
+    val micTable by lazy {
+        fun read(path: String) = runCatching { assets.open(path).use { it.readBytes().decodeToString() } }.getOrNull()
+        MicTable.load(read("hin/uscg_mic.csv").orEmpty(), read("hin/mic_brand_overrides.csv"))
+    }
     val repository by lazy {
         VehicleRepository(
             database, photos, library,

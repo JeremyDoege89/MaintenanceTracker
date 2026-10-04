@@ -110,7 +110,9 @@ import java.time.ZoneOffset
 fun VehicleEditScreen(vehicleId: String?, onDone: (String) -> Unit, onCancel: () -> Unit) {
     val context = LocalContext.current
     val vm: VehicleEditViewModel = viewModel(key = "edit-$vehicleId") {
-        VehicleEditViewModel(context.app().repository, context.app().photos, vehicleId, context.app().vinDecoder)
+        VehicleEditViewModel(
+            context.app().repository, context.app().photos, vehicleId, context.app().vinDecoder, { context.app().micTable },
+        )
     }
     val s by vm.state.collectAsStateWithLifecycle()
 
@@ -220,13 +222,7 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
         Field("Name *", f.name, s.errors["name"], { vm.edit { copy(name = it) } },
             placeholder = "Big Blue", caps = KeyboardCapitalization.Words)
         // Before year / make / model, so Decode can fill them instead of the owner typing them first.
-        if (type.decodesVin) {
-            VinField(f.vinOrHin, s.vin, { vm.edit { copy(vinOrHin = it) } }, vm::decodeVin)
-        } else {
-            Field(type.idLabel, f.vinOrHin, null, { vm.edit { copy(vinOrHin = it) } },
-                caps = KeyboardCapitalization.Characters,
-                supporting = "Optional. Stays on this phone; shown masked.")
-        }
+        VinField(type, f.vinOrHin, s.vin, { vm.edit { copy(vinOrHin = it) } }, vm::decodeVin)
 
         SectionLabel("Year / make / model")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -317,17 +313,18 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
 }
 
 /**
- * VIN with an optional Decode button (NHTSA vPIC). Decoding runs only on the tap, fills blank fields
- * only, and never blocks the form; errors and warnings stay inline under the field.
+ * VIN or HIN with an optional Decode button. VINs go to NHTSA vPIC; HINs are decoded on the phone
+ * (USCG maker codes) and never sent. Runs only on the tap, fills blank fields only, never blocks the
+ * form; errors and warnings stay inline under the field.
  */
 @Composable
-private fun VinField(value: String, vin: VinUi, onChange: (String) -> Unit, onDecode: () -> Unit) {
+private fun VinField(type: VehicleType, value: String, vin: VinUi, onChange: (String) -> Unit, onDecode: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = value,
                 onValueChange = onChange,
-                label = { Text("VIN") },
+                label = { Text(type.idLabel) },
                 isError = vin.error != null,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -353,7 +350,8 @@ private fun VinField(value: String, vin: VinUi, onChange: (String) -> Unit, onDe
         vin.warning?.let { Text(it, style = small, color = MaterialTheme.colorScheme.tertiary) }
         vin.chassis?.let { Text("Chassis (from VIN): $it", style = MaterialTheme.typography.bodyMedium) }
         Text(
-            "Optional; shown masked. VIN is sent to NHTSA's free decoder.",
+            if (type.decodesVin) "Optional; shown masked. VIN is sent to NHTSA's free decoder."
+            else "Optional; shown masked. Decoded on this phone; never sent anywhere.",
             style = small, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
