@@ -1,13 +1,21 @@
 # Play Console › Data safety — answers
 
-Based on the shipped code (no analytics/crash SDKs, `allowBackup="false"`, no network use
-except Google Play Billing). Re-check if any SDK is added.
+Based on the shipped code (no analytics/crash SDKs, `allowBackup="false"`). Network use: Google Play
+Billing, and the optional VIN **Decode** button, which sends the typed VIN (plus a typed model year)
+to NHTSA's vPIC API over HTTPS when the user taps it. Re-check if any SDK is added.
+
+**Owner decision before submitting:** whether the VIN decode counts as collecting data. It is
+user-initiated, over HTTPS, and sends no account, name or device identifier, but a VIN does leave the
+device for a third party (NHTSA). If you declare it, the closest Play data type is
+*App info and performance › Other app-generated data* or *Personal info › Other info*; mark it
+*shared*, *not required* (optional), *for app functionality*, *encrypted in transit*. Play's
+guidance on user-initiated transfers changes over time; check the current form text.
 
 | Question | Answer |
 |---|---|
 | Does your app collect or share any of the required user data types? | **No** |
-| Is all of the user data collected by your app encrypted in transit? | Not applicable — no data collected |
-| Do you provide a way for users to request that their data is deleted? | Data never leaves the device; in-app **Settings › Data › Delete all data** and uninstall remove it |
+| Is all of the user data collected by your app encrypted in transit? | Yes — the only network calls (Play Billing, NHTSA vPIC) are HTTPS |
+| Do you provide a way for users to request that their data is deleted? | In-app **Settings › Data › Delete all data** and uninstall remove everything on the device, including cached VIN decodes; the app keeps nothing on any server |
 
 Notes for the form:
 
@@ -16,6 +24,7 @@ Notes for the form:
   doesn't need to be declared by the developer).
 - "Collected" means sent off the device. Data stored only locally isn't "collected".
 - Exports go to a user-chosen location by explicit user action — not collection.
+- VIN decode: see the owner decision above.
 
 ## Other declarations
 

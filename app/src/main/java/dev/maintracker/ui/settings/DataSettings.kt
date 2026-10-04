@@ -302,7 +302,8 @@ fun AboutSection(version: String) {
     Row("Version", version)
     Row(
         "Privacy",
-        "Everything stays on this phone. No account, no analytics, no ads. Nothing leaves unless you export it yourself." +
+        "Everything stays on this phone. No account, no analytics, no ads. Nothing leaves unless you export it, " +
+            "or tap Decode to look up a VIN with NHTSA's free decoder." +
             if (PRIVACY_POLICY_URL.isNotEmpty()) " Tap for the full policy." else "",
     ) { if (PRIVACY_POLICY_URL.isNotEmpty()) context.startActivity(Intent(Intent.ACTION_VIEW, PRIVACY_POLICY_URL.toUri())) }
     if (SUPPORT_EMAIL.isNotEmpty()) {

@@ -96,6 +96,7 @@ import androidx.compose.ui.semantics.Role
 import java.time.ZoneId
 import dev.maintracker.domain.Format
 import dev.maintracker.ui.common.Field
+import dev.maintracker.ui.common.LocalAppActions
 import dev.maintracker.ui.common.MeterField
 import dev.maintracker.ui.common.PrimaryButton
 import dev.maintracker.ui.common.SectionLabel
@@ -114,6 +115,10 @@ fun VehicleEditScreen(vehicleId: String?, onDone: (String) -> Unit, onCancel: ()
     val s by vm.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(s.doneVehicleId) { s.doneVehicleId?.let(onDone) }
+    val actions = LocalAppActions.current
+    LaunchedEffect(s.vin.message) {
+        s.vin.message?.let { actions.showMessage(it, null); vm.vinMessageShown() }
+    }
     BackHandler { if (!vm.back()) onCancel() }
 
     val title = when {
@@ -214,6 +219,14 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
 
         Field("Name *", f.name, s.errors["name"], { vm.edit { copy(name = it) } },
             placeholder = "Big Blue", caps = KeyboardCapitalization.Words)
+        // Before year / make / model, so Decode can fill them instead of the owner typing them first.
+        if (type.decodesVin) {
+            VinField(f.vinOrHin, s.vin, { vm.edit { copy(vinOrHin = it) } }, vm::decodeVin)
+        } else {
+            Field(type.idLabel, f.vinOrHin, null, { vm.edit { copy(vinOrHin = it) } },
+                caps = KeyboardCapitalization.Characters,
+                supporting = "Optional. Stays on this phone; shown masked.")
+        }
 
         SectionLabel("Year / make / model")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -223,9 +236,6 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
                 Modifier.weight(1f), required = type.requiresMake, error = s.errors["make"])
         }
         Field("Model", f.model, null, { vm.edit { copy(model = it) } }, caps = KeyboardCapitalization.Words)
-        Field(type.idLabel, f.vinOrHin, null, { vm.edit { copy(vinOrHin = it) } },
-            caps = KeyboardCapitalization.Characters,
-            supporting = "Optional. Stays on this phone; shown masked.")
 
         SectionLabel("Current readings")
         Text(
@@ -303,6 +313,49 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
                 }) { Text("Clear") }
             },
         ) { DatePicker(state) }
+    }
+}
+
+/**
+ * VIN with an optional Decode button (NHTSA vPIC). Decoding runs only on the tap, fills blank fields
+ * only, and never blocks the form; errors and warnings stay inline under the field.
+ */
+@Composable
+private fun VinField(value: String, vin: VinUi, onChange: (String) -> Unit, onDecode: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onChange,
+                label = { Text("VIN") },
+                isError = vin.error != null,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters, keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Next,
+                ),
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedButton(
+                onClick = onDecode,
+                enabled = !vin.decoding && value.isNotBlank(),
+                modifier = Modifier.heightIn(min = 56.dp),
+            ) {
+                if (vin.decoding) {
+                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text("Decode")
+            }
+        }
+        val small = MaterialTheme.typography.bodySmall
+        vin.error?.let { Text(it, style = small, color = MaterialTheme.colorScheme.error) }
+        vin.warning?.let { Text(it, style = small, color = MaterialTheme.colorScheme.tertiary) }
+        vin.chassis?.let { Text("Chassis (from VIN): $it", style = MaterialTheme.typography.bodyMedium) }
+        Text(
+            "Optional; shown masked. VIN is sent to NHTSA's free decoder.",
+            style = small, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

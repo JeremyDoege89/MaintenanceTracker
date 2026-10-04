@@ -45,8 +45,8 @@ Keyword first, e.g. `RV & Boat Maintenance Log` (25) or `<Name>: RV & Boat Servi
 > Totals by month and year, a per-area breakdown and your biggest spends.
 >
 > **Private by design**
-> Works fully offline. No account, no sign-in, no ads, no analytics. Your data stays on your
-> phone and only leaves when you export it.
+> Works offline. No account, no sign-in, no ads, no analytics. Your data stays on your phone and
+> only leaves when you export it, or when you tap Decode to look up a VIN with NHTSA's free decoder.
 >
 > **Pro — one payment, no subscription**
 > The free version covers one vehicle completely. Pro ($9.99 once) adds unlimited vehicles,
@@ -63,6 +63,7 @@ generator service log, winterization checklist, maintenance reminders offline, f
 - Log every oil change, repair and penny — with photos and receipts.
 - Track part numbers, torque specs and fluid specs.
 - Works offline. No account. Your data stays on your phone.
+- Optional VIN decode fills in year, make and model (NHTSA's free decoder).
 - One-time purchase for Pro. No subscription required.
 
 ## Screenshots (§11.3) — from the real build with demo data
