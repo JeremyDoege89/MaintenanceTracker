@@ -173,7 +173,19 @@ fun MaintenanceTemplate.isOfferable(vehicle: Vehicle): Boolean {
     return reading < interval
 }
 
+/** Motorcycles need a make: it answers the Harley question, so Setup never has to ask it. */
+val VehicleType.requiresMake: Boolean get() = this == VehicleType.MOTORCYCLE
+
 object MakeHints {
+    /** Questions whose current answer is exactly what [make] would hint. */
+    fun agreeing(file: SetupFile, type: VehicleType, make: String?, answers: SetupAnswers): Set<String> {
+        val hinted = prefill(file, type, make, answers.filterKeys { q -> file.makeHints.none { it.questionId == q } })
+        return file.makeHints.map { it.questionId }.filterTo(HashSet()) { q ->
+            answers[q].orEmpty().isNotEmpty() && answers[q] == hinted[q]
+        }
+    }
+
+
     /** Pre-selects a hinted option only where its question has no answer yet. The make is a hint, never a filter. */
     fun prefill(file: SetupFile, type: VehicleType, make: String?, answers: SetupAnswers): SetupAnswers {
         val m = make?.trim().orEmpty()

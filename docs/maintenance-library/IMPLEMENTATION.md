@@ -39,6 +39,8 @@ Phase 1 product behavior:
 | `app/src/test/resources/library/matching_fixtures_v1.json` | 9 scenarios with the exact expected Setup/matcher output. Use them as golden tests. |
 | `docs/maintenance-library/maintenance_library_v1.csv` | Spreadsheet copy of the library, for reviewing and editing values. |
 | `docs/maintenance-library/tools/csv_to_json.py` | Regenerates the JSON after spreadsheet edits. It validates the data and bumps `dataVersion`. |
+| `docs/maintenance-library/common_makes.csv` | Make suggestions per vehicle type (`vehicle_type,make`). |
+| `docs/maintenance-library/tools/makes_to_json.py` | Loads `common_makes.csv` into `commonMakes` in the setup questions JSON, sorts it, bumps that file's `dataVersion` and prints how each make answers the make-hinted questions. |
 
 If the Android module isn't named `app`, move the two `app/...` folders to match.
 
@@ -412,6 +414,11 @@ From vehicle edit, reopen Setup with the saved `setupAnswers`. On save:
 1. Edit `docs/maintenance-library/maintenance_library_v1.csv` in a spreadsheet.
 2. Run `python3 docs/maintenance-library/tools/csv_to_json.py docs/maintenance-library/maintenance_library_v1.csv app/src/main/assets/library/maintenance_library_v1.json`. It validates the data and bumps `dataVersion`.
 3. Ship the update. On next launch, `LibrarySync` upserts changed templates and retires deleted rows.
+
+To change the make suggestions, edit `docs/maintenance-library/common_makes.csv` and run
+`python3 docs/maintenance-library/tools/makes_to_json.py docs/maintenance-library/common_makes.csv app/src/main/assets/library/setup_questions_v1.json`.
+Check its printout: every motorcycle make except Harley-Davidson must answer `mc_brand=other`, because motorcycles
+require a make and Setup does not ask the Harley question when the make answers it.
 
 Rules for edits:
 

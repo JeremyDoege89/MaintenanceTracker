@@ -116,6 +116,20 @@ class MatchingFixturesTest {
         assertEquals(tapped to emptySet<String>(), MakeHints.refresh(setup, type, "Harley", tapped, emptySet()))
     }
 
+    @Test fun savedAnswersThatMatchTheMakeCountAsHinted() {
+        val type = VehicleType.MOTORCYCLE
+        val saved = mapOf("mc_brand" to setOf("other"), "mc_drive" to setOf("shaft"))
+        assertEquals(setOf("mc_brand"), MakeHints.agreeing(setup, type, "Honda", saved))
+        // An answer the owner set against the make stays theirs, and non-brand answers never count.
+        assertEquals(emptySet<String>(), MakeHints.agreeing(setup, type, "Harley-Davidson", saved))
+        assertEquals(emptySet<String>(), MakeHints.agreeing(setup, type, "", saved))
+    }
+
+    @Test fun motorcyclesRequireAMake() {
+        assertTrue(VehicleType.MOTORCYCLE.requiresMake)
+        assertTrue(VehicleType.entries.filter { it.requiresMake } == listOf(VehicleType.MOTORCYCLE))
+    }
+
     @Test fun breakInSplitsByBrand() {
         val type = VehicleType.MOTORCYCLE
         val base = mapOf("mc_drive" to setOf("chain"))

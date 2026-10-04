@@ -15,6 +15,7 @@ import dev.maintracker.data.model.VehicleType
 import dev.maintracker.data.model.QuestionType
 import dev.maintracker.domain.library.LibraryMatcher
 import dev.maintracker.domain.library.MakeHints
+import dev.maintracker.domain.library.requiresMake
 import dev.maintracker.domain.library.SetupAnswers
 import dev.maintracker.domain.library.SetupEvaluator
 import dev.maintracker.domain.library.SetupFile
@@ -62,6 +63,8 @@ data class EditState(
     val answers: SetupAnswers = emptyMap(),
     /** Questions whose answer came from a make hint and not a tap; they follow the make if it changes. */
     val hintedAnswers: Set<String> = emptySet(),
+    /** Hinted questions the user asked to see again this visit to Setup; the rest stay folded into a one-line note. */
+    val revealedHints: Set<String> = emptySet(),
     /** Last evaluated answers; null until Setup's Next (or for an edit that never opened Setup). */
     val setupResult: SetupResult? = null,
     val recommendedIds: Set<String> = emptySet(),
@@ -147,8 +150,12 @@ class VehicleEditViewModel(
         viewModelScope.launch {
             val file = s.setup ?: repo.setupQuestions()
             _state.update {
-                val (answers, hinted) = MakeHints.refresh(file, type, it.form.make, it.answers, it.hintedAnswers)
-                it.copy(setup = file, step = EditStep.SETUP, answers = answers, hintedAnswers = hinted)
+                // A saved vehicle's answers that match its make count as hinted, so they fold here too.
+                val wasHinted = it.hintedAnswers + MakeHints.agreeing(file, type, it.form.make, it.answers)
+                val (answers, hinted) = MakeHints.refresh(file, type, it.form.make, it.answers, wasHinted)
+                it.copy(
+                    setup = file, step = EditStep.SETUP, answers = answers, hintedAnswers = hinted, revealedHints = emptySet(),
+                )
             }
         }
     }
@@ -163,6 +170,9 @@ class VehicleEditViewModel(
         }
         s.copy(answers = s.answers + (questionId to next), hintedAnswers = s.hintedAnswers - questionId)
     }
+
+    /** "Change" on a question the make answered: show it in full. */
+    fun revealHint(questionId: String) = _state.update { it.copy(revealedHints = it.revealedHints + questionId) }
 
     /** Setup -> Schedule: evaluate, match, keep what can be offered (IMPLEMENTATION.md §5 step 5). */
     fun submitSetup() {
@@ -263,6 +273,7 @@ class VehicleEditViewModel(
     companion object {
         fun validate(f: VehicleForm, type: VehicleType): Map<String, String> = buildMap {
             if (f.name.isBlank()) put("name", "Give it a name, like 'Big Blue'")
+            if (type.requiresMake && f.make.isBlank()) put("make", "Enter the make, like Honda or Harley-Davidson")
             if (f.year.isNotBlank()) {
                 val y = f.year.trim().toIntOrNull()
                 if (y == null || y < 1900 || y > Year.now().value + 2) put("year", "Enter a 4-digit year")

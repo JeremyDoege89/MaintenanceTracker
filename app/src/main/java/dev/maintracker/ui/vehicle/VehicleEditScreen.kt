@@ -78,6 +78,7 @@ import dev.maintracker.data.model.DateBasis
 import dev.maintracker.data.model.QuestionType
 import dev.maintracker.data.model.TemplateKind
 import dev.maintracker.domain.library.SetupEvaluator
+import dev.maintracker.domain.library.requiresMake
 import dev.maintracker.ui.common.DateField
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -219,7 +220,7 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
             Field("Year", f.year, s.errors["year"], { vm.edit { copy(year = it.filter(Char::isDigit).take(4)) } },
                 keyboard = KeyboardType.Number, modifier = Modifier.width(110.dp))
             MakeField(f.make, s.setup?.commonMakes?.get(type).orEmpty(), { vm.edit { copy(make = it) } },
-                Modifier.weight(1f))
+                Modifier.weight(1f), required = type.requiresMake, error = s.errors["make"])
         }
         Field("Model", f.model, null, { vm.edit { copy(model = it) } }, caps = KeyboardCapitalization.Words)
         Field(type.idLabel, f.vinOrHin, null, { vm.edit { copy(vinOrHin = it) } },
@@ -305,23 +306,31 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
     }
 }
 
-/** Free-text make with suggestions from the library's common makes; anything typed is kept. */
+/** Free-text make with suggestions from the library's common makes (scrolls); anything typed is kept. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MakeField(value: String, makes: List<String>, onChange: (String) -> Unit, modifier: Modifier) {
+private fun MakeField(
+    value: String, makes: List<String>, onChange: (String) -> Unit, modifier: Modifier,
+    required: Boolean = false, error: String? = null,
+) {
     var expanded by remember { mutableStateOf(false) }
-    val matches = makes.filter { it.contains(value.trim(), ignoreCase = true) && !it.equals(value.trim(), ignoreCase = true) }
+    val typed = value.trim()
+    // Every match, names starting with what was typed first; tapping an empty field lists them all.
+    val matches = makes.filter { it.contains(typed, ignoreCase = true) && !it.equals(typed, ignoreCase = true) }
+        .sortedBy { !it.startsWith(typed, ignoreCase = true) }
     ExposedDropdownMenuBox(expanded = expanded && matches.isNotEmpty(), onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
             value = value,
             onValueChange = { onChange(it); expanded = true },
-            label = { Text("Make") },
+            label = { Text(if (required) "Make *" else "Make") },
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
         )
         ExposedDropdownMenu(expanded = expanded && matches.isNotEmpty(), onDismissRequest = { expanded = false }) {
-            matches.take(8).forEach { make ->
+            matches.forEach { make ->
                 DropdownMenuItem(text = { Text(make) }, onClick = { onChange(make); expanded = false })
             }
         }
@@ -332,7 +341,9 @@ private fun MakeField(value: String, makes: List<String>, onChange: (String) -> 
 private fun SetupStep(s: EditState, vm: VehicleEditViewModel) {
     val type = s.type ?: return
     val file = s.setup ?: return
-    val questions = SetupEvaluator.visibleQuestions(file, type, s.answers)
+    // A question the make already answered folds into a note until the user asks to change it.
+    val (folded, questions) = SetupEvaluator.visibleQuestions(file, type, s.answers)
+        .partition { it.question.id in s.hintedAnswers && it.question.id !in s.revealedHints }
     val missing = SetupEvaluator.missingRequired(file, type, s.answers).map { it.id }.toSet()
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -342,6 +353,16 @@ private fun SetupStep(s: EditState, vm: VehicleEditViewModel) {
                         "\"Not sure\" is fine, and those tasks show up as \"Might apply\".",
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            items(folded, key = { "hint:" + it.question.id }) { vq ->
+                val chosen = vq.options.filter { it.id in s.answers[vq.question.id].orEmpty() }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        chosen.joinToString { it.label } + " — from the make \"" + s.form.make.trim() + "\"",
+                        style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { vm.revealHint(vq.question.id) }) { Text("Change") }
+                }
             }
             items(questions, key = { it.question.id }) { vq ->
                 val q = vq.question
