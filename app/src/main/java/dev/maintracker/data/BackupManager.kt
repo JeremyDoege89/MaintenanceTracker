@@ -180,7 +180,10 @@ class BackupManager(
 
     /** Settings › Data › Delete all data. Preferences (units, reminders) and Pro are kept. */
     suspend fun deleteAll() = withContext(Dispatchers.IO) {
-        db.withTransaction { db.vehicles().deleteAll() }
+        db.withTransaction {
+            db.vehicles().deleteAll()
+            db.vinDecodes().clear()
+        }
         photos.deleteAllFiles()
         clearReminders()
     }

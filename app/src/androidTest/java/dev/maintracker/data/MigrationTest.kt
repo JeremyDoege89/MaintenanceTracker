@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import dev.maintracker.data.db.MIGRATION_1_2
 import dev.maintracker.data.db.MIGRATION_2_3
+import dev.maintracker.data.db.MIGRATION_3_4
 import org.junit.runner.RunWith
 
 /**
@@ -92,6 +93,27 @@ class MigrationTest {
                 assertTrue(c.moveToFirst())
                 assertEquals("", c.getString(0))
                 assertTrue(c.isNull(1))
+            }
+        }
+    }
+
+    @Test
+    fun migrate3To4AddsVinCacheAndKeepsVehicles() {
+        helper.createDatabase(dbName, 3).use { db ->
+            db.execSQL(
+                "INSERT INTO vehicle (id, name, vehicleType, vinOrHin, archived, createdAt, updatedAt, configTags) " +
+                    "VALUES ('v', 'Wing', 'MOTORCYCLE', '1HGCM82633A004352', 0, 1, 1, '')",
+            )
+        }
+        helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).use { db ->
+            db.query("SELECT name, vinOrHin FROM vehicle WHERE id = 'v'").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals("Wing", c.getString(0))
+                assertEquals("1HGCM82633A004352", c.getString(1))
+            }
+            db.query("SELECT COUNT(*) FROM vin_decode_cache").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals(0, c.getInt(0))
             }
         }
     }

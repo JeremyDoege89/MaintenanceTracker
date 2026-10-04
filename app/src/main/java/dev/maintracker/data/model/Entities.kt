@@ -232,3 +232,19 @@ data class Reminder(
     val snoozedUntil: Long? = null,
     val escalationLevel: Int = 0,
 )
+
+/**
+ * Successful NHTSA vPIC decodes, keyed by normalized VIN; no expiry. A cache only: not in backups.
+ * [rawJson] is the vPIC Results[0] object so more fields can be read later without a refetch.
+ */
+@Entity(tableName = "vin_decode_cache")
+data class VinDecodeCache(
+    @PrimaryKey val vin: String,
+    val make: String,
+    val model: String? = null,
+    val modelYear: Int? = null,
+    val vehicleType: String? = null,
+    val errorCode: String? = null,
+    val rawJson: String,
+    val fetchedAt: Long,
+)

@@ -11,6 +11,7 @@ import dev.maintracker.data.model.Part
 import dev.maintracker.data.model.Reminder
 import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.data.model.Vehicle
+import dev.maintracker.data.model.VinDecodeCache
 
 @Database(
     entities = [
@@ -21,6 +22,7 @@ import dev.maintracker.data.model.Vehicle
         Part::class,
         Attachment::class,
         Reminder::class,
+        VinDecodeCache::class,
     ],
     version = AppDatabase.VERSION,
     exportSchema = true,
@@ -33,13 +35,14 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun parts(): PartDao
     abstract fun attachments(): AttachmentDao
     abstract fun reminders(): ReminderDao
+    abstract fun vinDecodes(): VinDecodeCacheDao
 
     companion object {
-        const val VERSION = 3
+        const val VERSION = 4
         const val NAME = "maintracker.db"
 
         /** Every schema bump adds its Migration here; never fallbackToDestructiveMigration. */
-        val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2, MIGRATION_2_3)
+        val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, NAME)
@@ -84,5 +87,16 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {
             "ALTER TABLE vehicle ADD COLUMN configTags TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE vehicle ADD COLUMN setupAnswers TEXT",
         ).forEach(db::execSQL)
+    }
+}
+
+/** v4: cache of NHTSA VIN decodes. A new table only; no existing rows change. */
+val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+    override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `vin_decode_cache` (`vin` TEXT NOT NULL, `make` TEXT NOT NULL, " +
+                "`model` TEXT, `modelYear` INTEGER, `vehicleType` TEXT, `errorCode` TEXT, `rawJson` TEXT NOT NULL, " +
+                "`fetchedAt` INTEGER NOT NULL, PRIMARY KEY(`vin`))",
+        )
     }
 }

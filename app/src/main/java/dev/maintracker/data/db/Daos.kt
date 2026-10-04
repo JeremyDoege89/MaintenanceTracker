@@ -18,6 +18,7 @@ import dev.maintracker.data.model.Reminder
 import dev.maintracker.data.model.ServiceRecord
 import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VehicleType
+import dev.maintracker.data.model.VinDecodeCache
 import kotlinx.coroutines.flow.Flow
 
 data class VehicleSummary(
@@ -314,4 +315,16 @@ interface ReminderDao {
     /** Everything that still has a moment to fire at: date rows, plus snoozed/deferred meter rows. */
     @Query("SELECT * FROM reminder WHERE deliveredAt IS NULL AND (triggerAt IS NOT NULL OR snoozedUntil IS NOT NULL)")
     suspend fun pendingTimed(): List<Reminder>
+}
+
+@Dao
+interface VinDecodeCacheDao {
+    @Query("SELECT * FROM vin_decode_cache WHERE vin = :vin")
+    suspend fun get(vin: String): VinDecodeCache?
+
+    @Upsert
+    suspend fun put(row: VinDecodeCache)
+
+    @Query("DELETE FROM vin_decode_cache")
+    suspend fun clear()
 }
