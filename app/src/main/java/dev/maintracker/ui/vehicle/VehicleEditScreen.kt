@@ -109,7 +109,7 @@ import java.time.ZoneOffset
 fun VehicleEditScreen(vehicleId: String?, onDone: (String) -> Unit, onCancel: () -> Unit) {
     val context = LocalContext.current
     val vm: VehicleEditViewModel = viewModel(key = "edit-$vehicleId") {
-        VehicleEditViewModel(context.app().repository, context.app().photos, vehicleId)
+        VehicleEditViewModel(context.app().repository, context.app().photos, vehicleId, context.app().vinDecoder)
     }
     val s by vm.state.collectAsStateWithLifecycle()
 

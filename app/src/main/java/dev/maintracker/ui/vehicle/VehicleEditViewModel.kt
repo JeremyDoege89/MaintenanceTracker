@@ -14,6 +14,9 @@ import dev.maintracker.data.model.Vehicle
 import dev.maintracker.data.model.VehicleType
 import dev.maintracker.data.model.QuestionType
 import dev.maintracker.domain.library.LibraryMatcher
+import dev.maintracker.data.vin.VinDecoder
+import dev.maintracker.domain.VinFill
+import dev.maintracker.domain.VinValidator
 import dev.maintracker.domain.library.MakeHints
 import dev.maintracker.domain.library.requiresMake
 import dev.maintracker.domain.library.SetupAnswers
@@ -74,12 +77,27 @@ data class EditState(
     val disclaimer: String = "",
     /** Set once saved; the screen navigates on it. */
     val doneVehicleId: String? = null,
+    val vin: VinUi = VinUi(),
+)
+
+/** The VIN field's Decode button. Survives rotation with the ViewModel. */
+data class VinUi(
+    val decoding: Boolean = false,
+    /** Inline under the field: bad format, offline, timeout, no decode. */
+    val error: String? = null,
+    /** Inline under the field; the decode still runs. */
+    val warning: String? = null,
+    /** Motorhomes: the decoded chassis, shown read-only (the VIN isn't the coach's). */
+    val chassis: String? = null,
+    /** One snackbar, consumed by the screen. */
+    val message: String? = null,
 )
 
 class VehicleEditViewModel(
     private val repo: VehicleRepository,
     private val photos: PhotoStore,
     private val vehicleId: String?,
+    private val vinDecoder: VinDecoder,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditState(isNew = vehicleId == null, loading = vehicleId != null))
@@ -119,8 +137,61 @@ class VehicleEditViewModel(
         }
     }
 
-    fun edit(transform: VehicleForm.() -> VehicleForm) =
-        _state.update { it.copy(form = it.form.transform(), errors = emptyMap()) }
+    fun edit(transform: VehicleForm.() -> VehicleForm) = _state.update {
+        val form = it.form.transform()
+        // A different VIN invalidates what was said about the old one.
+        val vin = if (form.vinOrHin == it.form.vinOrHin) it.vin else it.vin.copy(error = null, warning = null, chassis = null)
+        it.copy(form = form, errors = emptyMap(), vin = vin)
+    }
+
+    /**
+     * Decode button: validate, then cache / NHTSA vPIC, then fill blank fields only. Taps while a
+     * decode is running are ignored. Saving never depends on any of this.
+     */
+    fun decodeVin() {
+        val s = _state.value
+        val type = s.type ?: return
+        if (s.vin.decoding || !type.decodesVin) return
+        val checked = VinValidator.validate(s.form.vinOrHin)
+        if (checked is VinValidator.Result.BadFormat) {
+            _state.update { it.copy(vin = VinUi(error = checked.reason)) }
+            return
+        }
+        val warning = if (checked is VinValidator.Result.BadCheckDigit) "VIN looks mistyped — double-check it" else null
+        _state.update { it.copy(vin = VinUi(decoding = true, warning = warning)) }
+        val typedYear = s.form.year.trim().takeIf { it.length == 4 }?.toIntOrNull()
+        viewModelScope.launch {
+            val outcome = vinDecoder.decode(checked.vin, typedYear)
+            _state.update { cur -> cur.copy(vin = cur.vin.copy(decoding = false)).applyVin(type, outcome) }
+        }
+    }
+
+    fun vinMessageShown() = _state.update { it.copy(vin = it.vin.copy(message = null)) }
+
+    private fun EditState.applyVin(type: VehicleType, outcome: VinDecoder.Outcome): EditState = when (outcome) {
+        is VinDecoder.Outcome.Failed -> copy(vin = vin.copy(error = outcome.failure.message))
+        is VinDecoder.Outcome.Decoded -> {
+            val d = outcome.decode
+            val fill = VinFill.fill(
+                type, form.year, form.make, form.model, d.make, d.model, d.modelYear,
+                knownMakes = setup?.commonMakes?.get(type).orEmpty(),
+            )
+            val message = when {
+                fill.chassis != null -> "Chassis decoded: ${fill.chassis}"
+                fill.filled.isNotEmpty() -> "Filled: " + fill.filled.joinToString(" · ")
+                else -> "Nothing to fill — your entries were kept."
+            }
+            copy(
+                form = form.copy(
+                    year = fill.year?.toString() ?: form.year,
+                    make = fill.make ?: form.make,
+                    model = fill.model ?: form.model,
+                ),
+                errors = errors - setOfNotNull("year".takeIf { fill.year != null }, "make".takeIf { fill.make != null }),
+                vin = vin.copy(chassis = fill.chassis, message = message),
+            )
+        }
+    }
 
     fun setPhoto(uri: Uri) = viewModelScope.launch {
         val path = withContext(Dispatchers.IO) { photos.importPhoto(uri) } ?: return@launch
@@ -309,3 +380,14 @@ class VehicleEditViewModel(
         )
     }
 }
+
+/** Boats and PWC carry a HIN, which NHTSA can't decode. */
+val VehicleType.decodesVin: Boolean get() = idLabel == "VIN"
+
+private val VinDecoder.Failure.message: String
+    get() = when (this) {
+        VinDecoder.Failure.OFFLINE -> "Connect to the internet to decode."
+        VinDecoder.Failure.TIMEOUT -> "Decoder timed out — try again or enter details manually."
+        VinDecoder.Failure.SERVER -> "NHTSA's decoder isn't responding — enter details manually."
+        VinDecoder.Failure.EMPTY -> "Couldn't decode this VIN — enter details manually."
+    }

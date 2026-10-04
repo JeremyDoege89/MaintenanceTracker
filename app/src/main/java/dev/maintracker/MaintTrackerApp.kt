@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import dev.maintracker.data.vin.HttpVpicRemote
+import dev.maintracker.data.vin.VinDecoder
 import dev.maintracker.domain.Display
 import java.util.concurrent.TimeUnit
 
@@ -51,6 +53,7 @@ class MaintTrackerApp : Application() {
             storedVersion = settings::libraryDataVersion, setStoredVersion = { settings.setLibraryDataVersion(it) },
         )
     }
+    val vinDecoder by lazy { VinDecoder(database.vinDecodes(), HttpVpicRemote()) }
     val repository by lazy {
         VehicleRepository(
             database, photos, library,
