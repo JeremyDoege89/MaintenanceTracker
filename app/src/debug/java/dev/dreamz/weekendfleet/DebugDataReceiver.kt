@@ -1,5 +1,8 @@
 package dev.dreamz.weekendfleet
 
+import dev.dreamz.weekendfleet.domain.library.LibraryMatcher
+import dev.dreamz.weekendfleet.domain.library.SetupEvaluator
+import dev.dreamz.weekendfleet.domain.library.isOfferable
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -88,9 +91,13 @@ class DebugDataReceiver : BroadcastReceiver() {
         fun ago(months: Long, days: Long = 0) = LocalDate.now(zone).minusMonths(months).minusDays(days).atTime(10, 0)
             .atZone(zone).toInstant().toEpochMilli()
 
-        suspend fun vehicle(v: Vehicle, n: Int): Vehicle {
-            val ids = repo.templatesFor(v.vehicleType).take(n).map { it.id }.toSet()
-            return repo.createVehicle(v, ids)
+        // Tasks picked the way Setup picks them for a real owner: answers -> recommended, offerable only.
+        val setup = repo.setupQuestions()
+        suspend fun vehicle(v: Vehicle, answers: Map<String, Set<String>>): Vehicle {
+            val result = SetupEvaluator.evaluate(setup, v.vehicleType, answers)
+            val ids = LibraryMatcher.match(repo.templatesFor(v.vehicleType), v.vehicleType, result).recommended
+                .filter { it.isOfferable(v) }.map { it.id }.toSet()
+            return repo.createVehicle(v.copy(setupAnswers = SetupEvaluator.encodeAnswers(answers)), ids)
         }
         suspend fun log(v: Vehicle, title: String, area: Area, at: Long, miles: Double? = null, eng: Double? = null,
                         gen: Double? = null, cost: Double? = null, vendor: String? = null, taskTitle: String? = null) {
@@ -100,8 +107,11 @@ class DebugDataReceiver : BroadcastReceiver() {
         }
 
         val rv = vehicle(Vehicle(name = "Big Blue", vehicleType = VehicleType.MOTORHOME, year = 2018, make = "Winnebago",
-            model = "Vista 31BE", vinOrHin = "1F66F5DY8J0A08421", purchaseDate = day("2022-04-10"), purchaseMeter = 38_400.0,
-            currentMiles = 61_230.0, currentGeneratorHours = 812.0, createdAt = 0, updatedAt = 0), 14)
+            model = "Vista 31BE", vinOrHin = "1F66F5DY4J0A08421", purchaseDate = day("2022-04-10"), purchaseMeter = 38_400.0,
+            currentMiles = 61_230.0, currentGeneratorHours = 812.0, createdAt = 0, updatedAt = 0), mapOf(
+            "mh_chassis" to setOf("ford_f53"), "rv_generator" to setOf("gas"), "rv_slides" to setOf("in_wall"),
+            "rv_water_heater" to setOf("suburban"), "rv_fridge" to setOf("absorption"), "rv_propane" to setOf("built_in"),
+            "rv_batteries" to setOf("flooded"), "rv_equipment" to setOf("awning", "leveling")))
         log(rv, "Roof sealant inspection & touch-up", Area.ROOF_SEALS, ago(13), miles = 52_100.0, cost = 64.0, vendor = "Self", taskTitle = "roof")
         log(rv, "Chassis oil & filter", Area.ENGINE, ago(10), miles = 54_900.0, cost = 89.5, vendor = "Self", taskTitle = "oil")
         log(rv, "Generator service", Area.ELECTRICAL, ago(7), miles = 57_300.0, gen = 760.0, cost = 142.0, vendor = "Camping World", taskTitle = "generator")
@@ -114,13 +124,18 @@ class DebugDataReceiver : BroadcastReceiver() {
             createdAt = System.currentTimeMillis()))
 
         val boat = vehicle(Vehicle(name = "Reel Therapy", vehicleType = VehicleType.BOAT_POWER, year = 2015, make = "Sea Ray",
-            model = "SPX 210", vinOrHin = "SERV4521K415", currentEngineHours = 418.0, createdAt = 0, updatedAt = 0), 10)
+            model = "SPX 210", vinOrHin = "SERV4521K415", currentEngineHours = 418.0, createdAt = 0, updatedAt = 0), mapOf(
+            "pb_propulsion" to setOf("sterndrive"), "pb_cooling" to setOf("raw"), "pb_size" to setOf("no"),
+            "marine_water" to setOf("salt"), "marine_coastal" to setOf("yes"), "marine_storage" to setOf("trailer"),
+            "trailer_brakes" to setOf("surge"), "trailer_hubs" to setOf("ez_lube"), "marine_onboard" to setOf("freshwater")))
         log(boat, "Impeller replacement", Area.ENGINE, ago(14), eng = 330.0, cost = 185.0, vendor = "Marina Mechanics", taskTitle = "impeller")
         log(boat, "Lower unit oil", Area.DRIVETRAIN, ago(9), eng = 371.0, cost = 45.0, vendor = "Self", taskTitle = "gear")
         log(boat, "Hull zincs", Area.HULL, ago(4), eng = 402.0, cost = 62.0, vendor = "Self", taskTitle = "zinc")
 
         val bike = vehicle(Vehicle(name = "Wing", vehicleType = VehicleType.MOTORCYCLE, year = 2019, make = "Honda",
-            model = "Gold Wing Tour", vinOrHin = "JH2SC7900KK100733", currentMiles = 18_950.0, createdAt = 0, updatedAt = 0), 9)
+            model = "Gold Wing Tour", vinOrHin = "JH2SC7901KK100733", currentMiles = 18_950.0, createdAt = 0, updatedAt = 0), mapOf(
+            "mc_brand" to setOf("other"), "mc_drive" to setOf("shaft"), "mc_cooling" to setOf("liquid"),
+            "mc_clutch" to setOf("hydraulic"), "mc_fuel" to setOf("efi")))
         log(bike, "Oil & filter", Area.ENGINE, ago(8), miles = 14_200.0, cost = 74.0, vendor = "Self", taskTitle = "oil")
         log(bike, "Rear tire", Area.TIRES_WHEELS, ago(2), miles = 17_600.0, cost = 289.0, vendor = "Cycle Gear", taskTitle = "tire")
         repo.updateMeters(bike.id, 19_480.0, null, null)

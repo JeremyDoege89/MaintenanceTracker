@@ -18,6 +18,8 @@ Privacy policy: https://jeremydoege89.github.io/maintenance-tracker-privacy/
 
 ## Full description (4,000 chars max)
 
+Paste-ready plain-text version (no Markdown, no hard wraps): `PLAY-CONSOLE-GUIDE.md` §3.
+
 > Car maintenance apps don't fit an RV, a boat or a dirt bike. They won't take a roof-seal
 > inspection, a generator service or hull zincs, and they only count miles. This one was built
 > for rigs.
@@ -36,6 +38,10 @@ Privacy policy: https://jeremydoege89.github.io/maintenance-tracker-privacy/
 > **Log every job in seconds**
 > One tap from the home screen: what you did, the readings, cost, who did it (you or the shop),
 > parts used and notes. The schedule resets itself from the work you log.
+>
+> **VIN and HIN, no typing**
+> Scan the VIN barcode or plate, or a boat's hull number, with your camera. Tap Decode to fill in
+> year, make and model from NHTSA's free VIN decoder. Boat HINs are decoded right on your phone.
 >
 > **Parts, torque specs and fluids**
 > Keep part numbers, torque values and fluid specs with the task they belong to, so the next
@@ -73,10 +79,16 @@ Debug builds load the demo garage with
 `adb shell am broadcast -n dev.dreamz.weekendfleet/.DebugDataReceiver -a seed_demo`
 (back up first: `-a export_to --es name me.zip`, restore with `-a import_from --es name me.zip`).
 
-1. Home: due-soon dashboard with overdue and due-soon items
-2. Vehicle overview with photo and meter quick-update
-3. Schedule tab with a "whichever first" due line
-4. Quick-add sheet mid-entry
-5. Task detail with baseline / due and "Mark complete"
-6. Costs tab with the per-area chart
-7. Settings › Data export + the Pro comparison table
+Retaken 2026-10-06 on the moto g stylus (1080×2400, light theme, clean status bar). Play copies in
+`screenshots/play/` are 1200×2400 (Play needs at most 2:1; edges extended). Upload them in this order:
+
+1. Home: overdue tasks across the whole garage
+2. Schedule (All tasks): "whichever first" intervals, grouped by status and area
+3. Task detail: due line, Mark complete, "Why this interval?" with source
+4. Log service sheet mid-entry (task, readings, cost, Done by)
+5. Add motorcycle: VIN decoded into year, make and model
+6. Costs: this year, by area, biggest spends
+7. Vehicle types picker (all seven, new ATV icon)
+8. Pro comparison (paywall)
+
+`screenshots/extra-vehicle-overview.png` is a spare (Play takes at most 8 phone screenshots).
