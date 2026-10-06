@@ -70,7 +70,7 @@ generator service log, winterization checklist, maintenance reminders offline, f
 ## Screenshots (§11.3) — from the real build with demo data
 
 Debug builds load the demo garage with
-`adb shell am broadcast -n dev.maintracker/.DebugDataReceiver -a seed_demo`
+`adb shell am broadcast -n dev.dreamz.weekendfleet/.DebugDataReceiver -a seed_demo`
 (back up first: `-a export_to --es name me.zip`, restore with `-a import_from --es name me.zip`).
 
 1. Home: due-soon dashboard with overdue and due-soon items

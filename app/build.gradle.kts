@@ -8,12 +8,12 @@ plugins {
 }
 
 android {
-    namespace = "dev.maintracker"
+    namespace = "dev.dreamz.weekendfleet"
     compileSdk = 37
 
     defaultConfig {
         // Permanent once on Play; the name (WeekendFleet) can change, the id can't.
-        applicationId = "dev.maintracker"
+        applicationId = "dev.dreamz.weekendfleet"
         minSdk = 26
         targetSdk = 36
         versionCode = 6

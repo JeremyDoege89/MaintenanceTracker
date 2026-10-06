@@ -1,6 +1,6 @@
 # Maintenance Library v1: Implementation Brief
 
-**Audience:** the developer working in the MaintTracker repo (package `dev.maintracker`).
+**Audience:** the developer working in the MaintTracker repo (package `dev.dreamz.weekendfleet`).
 
 **Suggested prompt:**
 > Read `docs/maintenance-library/IMPLEMENTATION.md` and implement Phase 1. Check every item in section 3 against the code first and tell me about anything that doesn't match. Then follow section 5 in order, adding the tests from section 6 as you go.
