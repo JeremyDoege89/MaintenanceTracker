@@ -64,6 +64,7 @@ generator service log, winterization checklist, maintenance reminders offline, f
 - Track part numbers, torque specs and fluid specs.
 - Works offline. No account. Your data stays on your phone.
 - Optional VIN decode fills in year, make and model (NHTSA's free decoder).
+- Scan a VIN or boat HIN with the camera instead of typing it (read on your phone).
 - One-time purchase for Pro. No subscription required.
 
 ## Screenshots (§11.3) — from the real build with demo data

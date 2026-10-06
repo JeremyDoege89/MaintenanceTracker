@@ -96,6 +96,11 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(platform(libs.serialization.bom))
     implementation(libs.serialization.json)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.view)
+    implementation(libs.mlkit.barcode)
+    implementation(libs.mlkit.text)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)

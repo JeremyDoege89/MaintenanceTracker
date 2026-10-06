@@ -4,6 +4,12 @@ Based on the shipped code (no analytics/crash SDKs, `allowBackup="false"`). Netw
 Billing, and the optional VIN **Decode** button, which sends the typed VIN (plus a typed model year)
 to NHTSA's vPIC API over HTTPS when the user taps it. Re-check if any SDK is added.
 
+**SDK added: Google ML Kit** (bundled barcode scanning + text recognition, for the VIN/HIN scan
+button). Camera frames and recognised text are processed on the device and never sent. ML Kit
+itself may send Google diagnostics/usage metrics. **Owner decision:** check Google's current
+"ML Kit data disclosure" page (developers.google.com/ml-kit/android-data-disclosure) and declare
+whatever it lists for the bundled APIs; it changes over time, so don't copy old answers.
+
 **Owner decision before submitting:** whether the VIN decode counts as collecting data. It is
 user-initiated, over HTTPS, and sends no account, name or device identifier, but a VIN does leave the
 device for a third party (NHTSA). If you declare it, the closest Play data type is

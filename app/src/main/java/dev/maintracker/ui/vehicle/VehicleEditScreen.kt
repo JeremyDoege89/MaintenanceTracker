@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -57,6 +58,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -103,6 +105,12 @@ import dev.maintracker.ui.common.SectionLabel
 import dev.maintracker.ui.common.VehicleImage
 import dev.maintracker.ui.common.app
 import dev.maintracker.ui.common.icon
+import dev.maintracker.domain.MicTable
+import dev.maintracker.ui.scan.IdScanDialog
+import dev.maintracker.ui.scan.ScanTarget
+import dev.maintracker.ui.scan.hasCamera
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -194,6 +202,8 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
         uri?.let(vm::setPhoto)
     }
     var showDatePicker by remember { mutableStateOf(false) }
+    var scanning by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         Modifier
@@ -222,7 +232,7 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
         Field("Name *", f.name, s.errors["name"], { vm.edit { copy(name = it) } },
             placeholder = "Big Blue", caps = KeyboardCapitalization.Words)
         // Before year / make / model, so Decode can fill them instead of the owner typing them first.
-        VinField(type, f.vinOrHin, s.vin, { vm.edit { copy(vinOrHin = it) } }, vm::decodeVin)
+        VinField(type, f.vinOrHin, s.vin, { vm.edit { copy(vinOrHin = it) } }, vm::decodeVin, onScan = { scanning = true })
 
         SectionLabel("Year / make / model")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -291,6 +301,19 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
         )
     }
 
+    if (scanning) {
+        // The USCG table backs HIN plausibility; until it has loaded, HINs just need more frames.
+        val mic by produceState<MicTable?>(null, type) {
+            if (!type.decodesVin) value = withContext(Dispatchers.IO) { context.app().micTable }
+        }
+        IdScanDialog(
+            if (type.decodesVin) ScanTarget.VIN else ScanTarget.HIN,
+            knownMic = { mic?.lookup(it) != null },
+            onResult = { vm.edit { copy(vinOrHin = it) }; scanning = false },
+            onDismiss = { scanning = false },
+        )
+    }
+
     if (showDatePicker) {
         // DatePicker works in UTC midnight millis; we store that value as-is for a date-only field.
         val state = rememberDatePickerState(initialSelectedDateMillis = f.purchaseDate)
@@ -318,13 +341,19 @@ private fun DetailsForm(s: EditState, vm: VehicleEditViewModel) {
  * form; errors and warnings stay inline under the field.
  */
 @Composable
-private fun VinField(type: VehicleType, value: String, vin: VinUi, onChange: (String) -> Unit, onDecode: () -> Unit) {
+private fun VinField(
+    type: VehicleType, value: String, vin: VinUi, onChange: (String) -> Unit, onDecode: () -> Unit, onScan: () -> Unit,
+) {
+    val canScan = LocalContext.current.hasCamera()
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = value,
                 onValueChange = onChange,
                 label = { Text(type.idLabel) },
+                trailingIcon = if (canScan) {
+                    { IconButton(onClick = onScan) { Icon(Icons.Filled.DocumentScanner, contentDescription = "Scan ${type.idLabel} with camera") } }
+                } else null,
                 isError = vin.error != null,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(

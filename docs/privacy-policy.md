@@ -26,12 +26,17 @@ Nothing, unless you do it yourself:
   answer is kept on your phone so the same VIN isn't sent twice. NHTSA's own privacy policy
   covers its servers. If you never tap Decode, no VIN ever leaves the device. Boat HINs are
   never sent anywhere.
+- **Scanning a VIN or HIN.** If you use the scan button, the camera picture is read on your phone
+  by Google's ML Kit, built into the app. Pictures and the text read from them are never saved or
+  sent; only the number you confirm goes into the VIN/HIN field. ML Kit may send Google basic
+  diagnostic and usage information about the scanner itself (not pictures or scanned text);
+  Google's ML Kit terms cover that.
 - **Purchases.** Buying Pro is handled entirely by Google Play. The app learns only whether Pro
   is unlocked; Google's privacy policy covers the payment itself.
 
 ## What we don't do
 
-No account or sign-in. No analytics or crash-reporting SDKs. No advertising. No servers of
+No account or sign-in. No analytics or crash-reporting SDKs (ML Kit's own diagnostics are described above). No advertising. No servers of
 ours receive any data. The app needs no internet connection except for Google Play purchases and the optional VIN decode.
 
 ## Permissions
@@ -40,7 +45,8 @@ ours receive any data. The app needs no internet connection except for Google Pl
 - **Alarms & reminders (exact alarms)** — so reminders arrive at the time you set.
 - **Run at startup** — to re-schedule reminders after the phone restarts.
 - **Internet** — only for the optional VIN decode and Google Play purchases.
-- The camera is used only through your phone's own camera app, when you choose to take a photo.
+- **Camera** — only for the optional VIN/HIN scan, asked the first time you tap it. Photos you
+  attach are still taken through your phone's own camera app.
 
 ## Deleting your data
 
