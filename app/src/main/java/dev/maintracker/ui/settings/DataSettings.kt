@@ -51,8 +51,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.Currency
 
-/** Shown in About when set. Left blank until there's a real support address to publish. */
-const val SUPPORT_EMAIL = ""
+/** Shown in About; also the developer contact on the Play listing. */
+const val SUPPORT_EMAIL = "jaydoege8969@gmail.com"
 const val PRIVACY_POLICY_URL = "https://jeremydoege89.github.io/maintenance-tracker-privacy/"
 
 /** Settings › Units (Build Guide §5.7). Display-only: stored values never change. */
@@ -189,7 +189,7 @@ fun DataSection() {
     }
     fun export(kind: ExportKind, name: String) = actions.requirePro(ProFeature.EXPORT) {
         pendingExport = kind
-        create.launch("maintenance-$name-${LocalDate.now()}.${kind.ext}")
+        create.launch("weekendfleet-$name-${LocalDate.now()}.${kind.ext}")
     }
 
     val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->

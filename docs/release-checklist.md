@@ -11,7 +11,7 @@
 
 ## Needs Play Console (owner)
 
-- [ ] Create the app (final name chosen and trademark-checked — §14)
+- [ ] Create the app as **WeekendFleet** (name chosen 2026-10-06; quick web search found no app by that name — not a legal trademark search)
 - [ ] Enrol in Play App Signing (let Google generate the app signing key)
 - [x] Upload key created 2026-10-06 (`~/keys/maintracker-upload.jks` on the build VM, alias `upload`, RSA 4096, password in `~/keys/README-maintracker-upload.txt`; upload cert SHA-256 `B9:FA:2D:43:…:A7:6D:AE`). **Back up the .jks + password off the VM.** `keystore.properties` points at it (git-ignored)
 - [ ] In-app product `mt_pro_lifetime`: one-time, non-consumable, $9.99, active. Do **not** create `mt_plus_*` yet
@@ -20,7 +20,7 @@
 - [ ] With a license tester on the Play-installed build: buy Pro (test card "always approves"), "slow test card" for pending, cancel; uninstall + reinstall → Pro restored
 - [ ] Store listing from `play-listing.md`; 7 screenshots are in `screenshots/play/` (2:1, Play-compliant; originals in `screenshots/`); feature graphic 1024×500 and hi-res icon 512×512 are in `graphics/` (HTML sources there; re-render the feature graphic once the app name is chosen)
 - [x] Privacy policy live at https://jeremydoege89.github.io/maintenance-tracker-privacy/ (public repo JeremyDoege89/maintenance-tracker-privacy, GitHub Pages; regenerate `index.html` from `privacy-policy.md` when it changes); `PRIVACY_POLICY_URL` set
-- [ ] Support email → set `SUPPORT_EMAIL` in `DataSettings.kt`
+- [x] Support email jaydoege8969@gmail.com set in `SUPPORT_EMAIL`
 - [ ] Data safety form from `data-safety.md`; content rating; target audience; ads = none
 - [ ] Closed testing track before production
 

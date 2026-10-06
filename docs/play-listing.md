@@ -1,7 +1,7 @@
 # Play Store listing (draft)
 
-Working name **Maintenance Tracker** — the final name is still open (Build Guide §14: RigLog /
-ShedLog / TorqueLog / other; trademark-check the pick). Swap it in everywhere below once chosen.
+App name **WeekendFleet** (chosen 2026-10-06). Support / developer email: jaydoege8969@gmail.com.
+Privacy policy: https://jeremydoege89.github.io/maintenance-tracker-privacy/
 
 - **Category:** Auto & Vehicles (secondary: Tools)
 - **Price:** Free, with in-app product `mt_pro_lifetime` (Pro, one-time, $9.99)
@@ -10,7 +10,7 @@ ShedLog / TorqueLog / other; trademark-check the pick). Swap it in everywhere be
 
 ## Title (30 chars max)
 
-Keyword first, e.g. `RV & Boat Maintenance Log` (25) or `<Name>: RV & Boat Service Log`.
+`WeekendFleet: Maintenance Log` (29). Alternative: `WeekendFleet: RV & Boat Log` (27).
 
 ## Short description (80 chars max)
 

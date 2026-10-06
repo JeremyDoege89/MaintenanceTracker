@@ -12,12 +12,12 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        // App name is still open (Build Guide §14) — the id is deliberately neutral.
+        // Permanent once on Play; the name (WeekendFleet) can change, the id can't.
         applicationId = "dev.maintracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.5.0-m5"
+        versionCode = 6
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -1,6 +1,6 @@
 # Privacy policy
 
-_Effective: October 6, 2026. App: Maintenance Tracker for Android, by the developer named on its Google Play listing._
+_Effective: October 6, 2026. App: WeekendFleet for Android, by the developer named on its Google Play listing._
 
 **Short version: everything you enter stays on your phone. We don't collect, receive or sell any of it.
 The one exception is a VIN you choose to decode, which goes to the US government's free VIN decoder.**

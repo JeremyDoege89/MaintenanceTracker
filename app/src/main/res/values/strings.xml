@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Working title. Final name is an open decision (Build Guide §14); keep it in this one string. -->
-    <string name="app_name">Maint Tracker</string>
+    <string name="app_name">WeekendFleet</string>
 </resources>
