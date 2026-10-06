@@ -53,7 +53,7 @@ import java.util.Currency
 
 /** Shown in About when set. Left blank until there's a real support address to publish. */
 const val SUPPORT_EMAIL = ""
-const val PRIVACY_POLICY_URL = ""
+const val PRIVACY_POLICY_URL = "https://jeremydoege89.github.io/maintenance-tracker-privacy/"
 
 /** Settings › Units (Build Guide §5.7). Display-only: stored values never change. */
 @Composable

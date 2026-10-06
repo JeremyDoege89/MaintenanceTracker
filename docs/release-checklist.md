@@ -19,7 +19,7 @@
 - [ ] Internal testing track → upload release AAB → install from Play on oulu
 - [ ] With a license tester on the Play-installed build: buy Pro (test card "always approves"), "slow test card" for pending, cancel; uninstall + reinstall → Pro restored
 - [ ] Store listing from `play-listing.md`; 7 screenshots are in `screenshots/play/` (2:1, Play-compliant; originals in `screenshots/`); feature graphic 1024×500 and hi-res icon 512×512 are in `graphics/` (HTML sources there; re-render the feature graphic once the app name is chosen)
-- [ ] Privacy policy (`privacy-policy.md`) posted at a public URL → set `PRIVACY_POLICY_URL` in `DataSettings.kt`
+- [x] Privacy policy live at https://jeremydoege89.github.io/maintenance-tracker-privacy/ (public repo JeremyDoege89/maintenance-tracker-privacy, GitHub Pages; regenerate `index.html` from `privacy-policy.md` when it changes); `PRIVACY_POLICY_URL` set
 - [ ] Support email → set `SUPPORT_EMAIL` in `DataSettings.kt`
 - [ ] Data safety form from `data-safety.md`; content rating; target audience; ads = none
 - [ ] Closed testing track before production

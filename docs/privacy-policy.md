@@ -1,6 +1,6 @@
 # Privacy policy
 
-_Effective: <date of first release>. App: Maintenance Tracker (working name). Developer: <name / contact email>._
+_Effective: October 6, 2026. App: Maintenance Tracker for Android, by the developer named on its Google Play listing._
 
 **Short version: everything you enter stays on your phone. We don't collect, receive or sell any of it.
 The one exception is a VIN you choose to decode, which goes to the US government's free VIN decoder.**
@@ -37,14 +37,15 @@ Nothing, unless you do it yourself:
 ## What we don't do
 
 No account or sign-in. No analytics or crash-reporting SDKs (ML Kit's own diagnostics are described above). No advertising. No servers of
-ours receive any data. The app needs no internet connection except for Google Play purchases and the optional VIN decode.
+ours receive any data. The app needs no internet connection except for Google Play purchases, the optional VIN decode,
+and ML Kit's diagnostics described above.
 
 ## Permissions
 
 - **Notifications** — to remind you when maintenance is due.
 - **Alarms & reminders (exact alarms)** — so reminders arrive at the time you set.
 - **Run at startup** — to re-schedule reminders after the phone restarts.
-- **Internet** — only for the optional VIN decode and Google Play purchases.
+- **Internet** — only for the optional VIN decode, Google Play purchases and ML Kit's diagnostics.
 - **Camera** — only for the optional VIN/HIN scan, asked the first time you tap it. Photos you
   attach are still taken through your phone's own camera app.
 
@@ -64,4 +65,4 @@ If this policy changes, the new version will be posted at this address with a ne
 
 ## Contact
 
-<support email>
+Questions about this policy: use the developer contact email on the app's Google Play listing.
