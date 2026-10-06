@@ -160,17 +160,16 @@ private fun Notice(text: String, icon: ImageVector = Icons.Filled.Info) {
 
 private enum class Cell { YES, NO }
 
-private class Feature(val label: String, val free: Any, val pro: Any, val plus: Any)
+private class Feature(val label: String, val free: Any, val pro: Any)
 
 private val FEATURES = listOf(
-    Feature("Vehicles", "1", "Unlimited", "Unlimited"),
-    Feature("Schedules, reminders, history, parts", Cell.YES, Cell.YES, Cell.YES),
-    Feature("Photos & receipts", Cell.NO, Cell.YES, Cell.YES),
-    Feature("Export (JSON / CSV)", Cell.NO, Cell.YES, Cell.YES),
-    Feature("Cloud backup & sync", Cell.NO, Cell.NO, Cell.YES),
+    Feature("Vehicles", "1", "Unlimited"),
+    Feature("Schedules, reminders, history, parts", Cell.YES, Cell.YES),
+    Feature("Photos & receipts", Cell.NO, Cell.YES),
+    Feature("Backup & export (JSON / CSV)", Cell.NO, Cell.YES),
 )
 
-/** Free | Pro | Plus. Every tick and dash is also spoken, never colour-only (§8). */
+/** Free | Pro, only what ships today. Every tick and dash is also spoken, never colour-only (§8). */
 @Composable
 private fun Comparison(price: String) {
     Column(Modifier.fillMaxWidth()) {
@@ -178,7 +177,6 @@ private fun Comparison(price: String) {
             Box(Modifier.weight(1.5f))
             Header("Free", "$0")
             Header("Pro", "$price once", highlight = true)
-            Header("Plus", "$2.99/mo or $19.99/yr · coming later")
         }
         FEATURES.forEach { f ->
             HorizontalDivider()
@@ -186,7 +184,6 @@ private fun Comparison(price: String) {
                 Text(f.label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1.5f).padding(vertical = 8.dp))
                 Value(f.free, "Free", f.label)
                 Value(f.pro, "Pro", f.label)
-                Value(f.plus, "Plus", f.label)
             }
         }
     }
