@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.AirportShuttle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Construction
@@ -67,7 +66,7 @@ val VehicleType.icon: ImageVector
         VehicleType.BOAT_POWER -> Icons.Filled.DirectionsBoat
         VehicleType.BOAT_SAIL -> Icons.Filled.Sailing
         VehicleType.MOTORCYCLE -> Icons.Filled.TwoWheeler
-        VehicleType.ATV_UTV -> Icons.Filled.Agriculture
+        VehicleType.ATV_UTV -> AtvIcon
         VehicleType.PWC -> Icons.Filled.Waves
     }
 
