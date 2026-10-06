@@ -12,12 +12,13 @@
 ## Needs Play Console (owner)
 
 - [ ] Create the app (final name chosen and trademark-checked — §14)
-- [ ] Enrol in Play App Signing; create an **upload key** (`keytool -genkeypair -v -keystore upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`), keep it out of git
+- [ ] Enrol in Play App Signing (let Google generate the app signing key)
+- [x] Upload key created 2026-10-06 (`~/keys/maintracker-upload.jks` on the build VM, alias `upload`, RSA 4096, password in `~/keys/README-maintracker-upload.txt`; upload cert SHA-256 `B9:FA:2D:43:…:A7:6D:AE`). **Back up the .jks + password off the VM.** `keystore.properties` points at it (git-ignored)
 - [ ] In-app product `mt_pro_lifetime`: one-time, non-consumable, $9.99, active. Do **not** create `mt_plus_*` yet
 - [ ] License testers (Settings › License testing) incl. your own Google account
 - [ ] Internal testing track → upload release AAB → install from Play on oulu
 - [ ] With a license tester on the Play-installed build: buy Pro (test card "always approves"), "slow test card" for pending, cancel; uninstall + reinstall → Pro restored
-- [ ] Store listing from `play-listing.md`; 7 screenshots are in `screenshots/play/` (2:1, Play-compliant; originals in `screenshots/`); still need feature graphic 1024×500 and hi-res icon 512×512
+- [ ] Store listing from `play-listing.md`; 7 screenshots are in `screenshots/play/` (2:1, Play-compliant; originals in `screenshots/`); feature graphic 1024×500 and hi-res icon 512×512 are in `graphics/` (HTML sources there; re-render the feature graphic once the app name is chosen)
 - [ ] Privacy policy (`privacy-policy.md`) posted at a public URL → set `PRIVACY_POLICY_URL` in `DataSettings.kt`
 - [ ] Support email → set `SUPPORT_EMAIL` in `DataSettings.kt`
 - [ ] Data safety form from `data-safety.md`; content rating; target audience; ads = none
@@ -32,5 +33,5 @@
 
 ## Build
 
-- `./gradlew bundleRelease` (needs `signingConfigs.release` wired to the upload key — not yet configured)
+- `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`, signed with the upload key (verified 2026-10-06)
 - versionCode / versionName in `app/build.gradle.kts`
