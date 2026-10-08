@@ -43,6 +43,14 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+        // Release code (R8) with the debug key and its own id, so minified builds can be checked on a
+        // phone next to the Play install: ./gradlew installMinified
+        create("minified") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".minified"
+            matchingFallbacks += "release"
+        }
     }
 
     compileOptions {
