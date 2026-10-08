@@ -121,4 +121,17 @@ The free version covers one vehicle completely. Pro ($9.99 once) adds unlimited 
    US, Canada, UK, Australia. Send testers `docs/WeekendFleet-Tester-Invite.pdf`.
 5. **After 14 days** with 12+ testers opted in: Dashboard › Apply for production access.
 
-Package name: `dev.dreamz.weekendfleet` (permanent after the first upload). Version 1.0.0 (code 6).
+Package name: `dev.dreamz.weekendfleet` (permanent after the first upload). Version 1.0.1 (code 7).
+
+### Updating a release
+
+Each upload needs a higher version code. For 1.0.1: Testing › Internal testing › Create new release,
+upload `release/app-release.aab`, paste the release notes below, then Save › Review › Roll out.
+
+Release notes for 1.0.1 (en-US):
+
+```
+<en-US>
+Fixes a crash when scanning a VIN or hull number with the camera.
+</en-US>
+```

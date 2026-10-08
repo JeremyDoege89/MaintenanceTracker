@@ -35,3 +35,6 @@
 
 - `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`, signed with the upload key (verified 2026-10-06)
 - versionCode / versionName in `app/build.gradle.kts`
+- `./gradlew installMinified` puts release (R8) code on a phone next to the Play install (debug key,
+  id `dev.dreamz.weekendfleet.minified`). Smoke-test camera scan, Decode, backup and the paywall with it
+  before every upload: debug builds don't run R8, and 1.0.0 shipped a scan crash that only R8 caused.

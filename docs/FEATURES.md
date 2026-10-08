@@ -1,7 +1,7 @@
 # WeekendFleet — features
 
 Offline maintenance log and reminders for RVs, trailers, boats, motorcycles, ATVs and personal
-watercraft. Android 8.0+ (API 26). Version 1.0.0.
+watercraft. Android 8.0+ (API 26). Version 1.0.1.
 
 ## Vehicles
 
